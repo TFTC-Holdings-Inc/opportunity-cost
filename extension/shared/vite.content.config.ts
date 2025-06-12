@@ -1,4 +1,6 @@
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 // This config is for building the content script as a separate IIFE bundle.
@@ -6,6 +8,11 @@ export default defineConfig(({ mode }) => {
   const browser = mode === "firefox" ? "firefox" : "chrome";
 
   return {
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
     build: {
       outDir: path.resolve(__dirname, `dist/${browser}`),
       // To prevent Vite from clearing the outDir from the main build
@@ -22,7 +29,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    // We don't need plugins like react here for the content script
-    plugins: [],
+    // Add React and Tailwind support for the content script
+    plugins: [react(), tailwindcss()],
   };
 });

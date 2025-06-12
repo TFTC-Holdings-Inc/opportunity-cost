@@ -7,6 +7,9 @@
  */
 
 import browser from "webextension-polyfill";
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { BitcoinTimeMachine } from "@/components/bitcoin-time-machine";
 import type { UserPreferences } from "./storage";
 
 async function main() {
@@ -408,6 +411,11 @@ async function main() {
           frag.appendChild(document.createTextNode(" | "));
           frag.appendChild(bitcoinValueSpan);
         }
+
+        // --- Attach Bitcoin Time Machine button ---
+        const tmBtn = createTimeMachineButton(fiatValue, satsValue);
+        frag.appendChild(tmBtn);
+
         if (trailingWS) {
           frag.appendChild(document.createTextNode(trailingWS));
         }
@@ -580,6 +588,26 @@ async function main() {
       childList: true,
       subtree: true,
     });
+
+    function createTimeMachineButton(fiatValue: number, satsValue: number): HTMLElement {
+      const container = document.createElement("span");
+      container.className = "oc-time-machine-container inline-flex";
+
+      // Mount React component
+      try {
+        const root = createRoot(container);
+        root.render(
+          React.createElement(BitcoinTimeMachine, {
+            fiatValue,
+            satsValue,
+          }),
+        );
+      } catch (err) {
+        console.error("Failed to mount BitcoinTimeMachine component", err);
+      }
+
+      return container;
+    }
   } catch (error) {
     alert(error);
     console.error("Opportunity Cost: An error occurred:", error);
