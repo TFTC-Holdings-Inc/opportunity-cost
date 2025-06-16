@@ -564,6 +564,27 @@ async function main() {
     processCompositePriceElements();
     walkDOM(document.body);
 
+    // Inject CSS early, before any React components are rendered
+    function injectContentCSS() {
+      // Check if CSS is already injected
+      if (document.querySelector('link[href*="tooltip.css"]')) {
+        return;
+      }
+
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.type = "text/css";
+      link.href = browser.runtime.getURL("assets/tooltip.css");
+      link.onload = () => console.log("Extension CSS loaded successfully");
+      link.onerror = () => {
+        console.error("Failed to load assets/tooltip.css");
+      };
+      document.head.appendChild(link);
+    }
+
+    // Inject CSS immediately
+    injectContentCSS();
+
     // Observes DOM mutations to process dynamically added content for price conversion
     const observer = new MutationObserver((mutations: MutationRecord[]) => {
       processAmazonPrices();

@@ -24,14 +24,8 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       viteStaticCopy({
         targets: [
-          {
-            src: `../${browser}/manifest.json`,
-            dest: ".",
-          },
-          {
-            src: "public/icons",
-            dest: ".",
-          },
+          { src: `../${browser}/manifest.json`, dest: "." },
+          { src: "public/icons", dest: "." },
         ],
       }),
     ],

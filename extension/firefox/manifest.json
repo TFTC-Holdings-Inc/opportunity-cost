@@ -31,5 +31,6 @@
     "gecko": {
       "id": "support@opportunitycost.app"
     }
-  }
+  },
+  "web_accessible_resources": ["assets/tooltip.css"]
 }
