@@ -169,40 +169,35 @@ async function main() {
       });
 
     // Helper to abbreviate large satoshi values (e.g., 100000 -> 100k, 1000000 -> 1M)
-    const abbreviateSats = (sats: number): string => {
-      const thresholds: [number, string][] = [
-        [1e15, "Q"],
-        [1e12, "T"],
-        [1e9, "B"],
-        [1e6, "M"],
-        [1e3, "k"],
-      ];
-      for (const [value, suffix] of thresholds) {
-        if (sats >= value) {
-          const shortened = sats / value;
-          // Use fewer decimals for larger numbers
-          const decimals = shortened >= 100 ? 0 : shortened >= 10 ? 1 : 2;
-          const formatted = shortened.toLocaleString(undefined, {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: decimals,
-          });
-          return `${formatted}${suffix}`;
-        }
-      }
-      return sats.toLocaleString();
-    };
+    // const abbreviateSats = (sats: number): string => {
+    //   const thresholds: [number, string][] = [
+    //     [1e15, "Q"],
+    //     [1e12, "T"],
+    //     [1e9, "B"],
+    //     [1e6, "M"],
+    //     [1e3, "k"],
+    //   ];
+    //   for (const [value, suffix] of thresholds) {
+    //     if (sats >= value) {
+    //       const shortened = sats / value;
+    //       // Use fewer decimals for larger numbers
+    //       const decimals = shortened >= 100 ? 0 : shortened >= 10 ? 1 : 2;
+    //       const formatted = shortened.toLocaleString(undefined, {
+    //         minimumFractionDigits: 0,
+    //         maximumFractionDigits: decimals,
+    //       });
+    //       return `${formatted}${suffix}`;
+    //     }
+    //   }
+    //   return sats.toLocaleString();
+    // };
 
     // Formats a bitcoin value (in satoshis) according to user denomination preference
     const formatBitcoinValue = (satoshis: number): string => {
       const btc = satoshis / SATS_IN_BTC;
       if (btc >= 100) return `${fmt(btc, 0)} BTC`;
       if (userPreferences.denomination === "dynamic") {
-        if (btc < 0.01) {
-          // Abbreviate sats for large values (e.g. 100k sats)
-          const satsStr = satoshis >= 10_000 ? abbreviateSats(satoshis) : fmt(satoshis, 0);
-          return `${satsStr} sats`;
-        }
-        return `${fmt(btc, 2)} BTC`;
+        return btc < 0.01 ? `${fmt(satoshis, 0)} sats` : `${fmt(btc, 2)} BTC`;
       }
       if (userPreferences.denomination === "btc") {
         if (btc >= 1) return `${fmt(btc, 2)} BTC`;
@@ -214,10 +209,7 @@ async function main() {
           maximumFractionDigits: 8,
         })} BTC`;
       }
-      // Sats denomination
-      // Abbreviate sats for large values (e.g. 10k sats)
-      const satsStr = satoshis >= 10_000 ? abbreviateSats(satoshis) : fmt(satoshis, 0);
-      return `${satsStr} sats`;
+      return `${fmt(satoshis, 0)} sats`;
     };
 
     // Fetches the latest Bitcoin prices for all supported currencies from the background script

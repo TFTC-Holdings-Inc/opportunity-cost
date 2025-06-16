@@ -11,10 +11,10 @@
     "package:firefox": "npm run build:firefox && cd dist/firefox && zip -r ../oc-firefox.zip .",
     "package": "npm run package:chrome && npm run package:firefox",
     "lint": "eslint .",
-    "watch:ts": "tsc -b --watch",
-    "watch:chrome": "cross-env WATCH=1 concurrently \"pnpm run watch:ts\" \"vite build --mode chrome --watch\" \"vite build --mode chrome --config vite.content.config.ts --watch\"",
-    "watch:firefox": "cross-env WATCH=1 concurrently \"pnpm run watch:ts\" \"vite build --mode firefox --watch\" \"vite build --mode firefox --config vite.content.config.ts --watch\" \"vite build --mode firefox --config vite.background.config.ts --watch\"",
-    "watch:all": "cross-env WATCH=1 concurrently \"tsc -b --watch\" \"vite build --mode chrome --watch\" \"vite build --mode chrome --config vite.content.config.ts --watch\" \"vite build --mode firefox --watch\" \"vite build --mode firefox --config vite.content.config.ts --watch\" \"vite build --mode firefox --config vite.background.config.ts --watch\""
+    "dev:ts": "tsc -b --watch",
+    "dev:chrome": "cross-env WATCH=1 concurrently \"pnpm run watch:ts\" \"vite build --mode chrome --watch\" \"vite build --mode chrome --config vite.content.config.ts --watch\"",
+    "dev:firefox": "cross-env WATCH=1 concurrently \"pnpm run watch:ts\" \"vite build --mode firefox --watch\" \"vite build --mode firefox --config vite.content.config.ts --watch\" \"vite build --mode firefox --config vite.background.config.ts --watch\"",
+    "dev": "cross-env WATCH=1 concurrently \"tsc -b --watch\" \"vite build --mode chrome --watch\" \"vite build --mode chrome --config vite.content.config.ts --watch\" \"vite build --mode firefox --watch\" \"vite build --mode firefox --config vite.content.config.ts --watch\" \"vite build --mode firefox --config vite.background.config.ts --watch\""
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",

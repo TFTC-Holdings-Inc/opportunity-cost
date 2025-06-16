@@ -20,7 +20,7 @@ export function Download() {
               alt="Chrome"
               width={64}
               height={64}
-              className="mb-4"
+              className="mb-4 size-16"
             />
             <h3 className="text-xl font-bold mb-2">Chrome Extension</h3>
             <p className="mb-4 text-muted-foreground">Version 0.0.2</p>
@@ -41,7 +41,7 @@ export function Download() {
               alt="Brave"
               width={64}
               height={64}
-              className="mb-4"
+              className="mb-4 size-16"
             />
             <h3 className="text-xl font-bold mb-2">Brave Browser Extension</h3>
             <p className="mb-4 text-muted-foreground">Version 0.0.2</p>
@@ -56,23 +56,25 @@ export function Download() {
               </a>
             </Button>
           </div>
-          <div className="bg-accent rounded-lg p-6 shadow-sm border border-border transition-all duration-200 hover:-translate-y-1 hover:shadow-md flex flex-col items-center w-full md:w-[300px]">
+          <div className="bg-card rounded-lg p-6 shadow-sm border border-border transition-all duration-200 hover:-translate-y-1 hover:shadow-md flex flex-col items-center w-full md:w-[300px]">
             <Image
               src="/images/icons/firefox.svg"
               alt="Firefox"
               width={64}
               height={64}
-              className="mb-4"
+              className="mb-4 size-16"
             />
             <h3 className="text-xl font-bold mb-2">Firefox Add-on</h3>
-            <p className="mb-4 text-muted-foreground">Coming Soon</p>
+            <p className="mb-4 text-muted-foreground">Version 0.0.2</p>
             <Button
-              disabled
+              asChild
               variant="primary"
               size="lg"
-              className="font-medium text-md opacity-50 cursor-not-allowed"
+              className="font-medium text-md"
             >
-              Add to Firefox
+              <a href="https://addons.mozilla.org/addon/opportunity-cost/">
+                Add to Firefox
+              </a>
             </Button>
           </div>
         </div>
