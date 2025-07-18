@@ -806,6 +806,118 @@ export default function DemoPage() {
             </div>
           </Section>
 
+          <Section title="Bitcoin Conversion Edge Cases">
+            <div className="space-y-4">
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                  Bug Report Test Cases
+                </h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+                  These values are designed to test the specific bug where
+                  Bitcoin conversions show incorrect decimal placement (e.g.,
+                  $0.12M instead of $12M).
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                {[
+                  "$12M",
+                  "$120M",
+                  "$1.2M",
+                  "$12.5M",
+                  "$125M",
+                  "$1.25M",
+                  "$0.12M",
+                  "$0.125M",
+                  "$12,000,000",
+                  "$120,000,000",
+                  "$1,200,000",
+                  "$12,500,000",
+                  "$125,000,000",
+                  "$1,250,000",
+                  "$120,000",
+                  "$1,250",
+                  "12 million dollars",
+                  "120 million dollars",
+                  "1.2 million dollars",
+                  "12.5 million dollars",
+                  "$12 million",
+                  "$120 million",
+                  "$1.2 million",
+                  "$12.5 million",
+                ].map((val) => (
+                  <div
+                    key={val}
+                    className="p-3 bg-white dark:bg-neutral-800 rounded border-2 border-red-200 dark:border-red-800"
+                  >
+                    <div className="font-mono">{val}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Test case
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6">
+                <h4 className="font-semibold mb-3">
+                  High-Value Problematic Amounts
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {[
+                    "The company raised $12M in Series B funding",
+                    "Real estate portfolio worth $120M",
+                    "Bitcoin purchase of $1.2M",
+                    "Investment of $12.5M in startups",
+                    "Acquisition price: $125M",
+                    "Market cap reached $1.25M",
+                    "Revenue of $120,000 per month",
+                    "Annual salary: $1,250,000",
+                    "The deal was valued at twelve million dollars ($12M)",
+                    "Stock options worth $120M at current prices",
+                    "Cryptocurrency holdings: $1.2M in Bitcoin",
+                    "Property investment of $12.5M downtown",
+                  ].map((sentence) => (
+                    <div
+                      key={sentence}
+                      className="p-3 bg-white dark:bg-neutral-800 rounded border border-orange-200 dark:border-orange-800"
+                    >
+                      {sentence}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <h4 className="font-semibold mb-3">
+                  Decimal Precision Test Cases
+                </h4>
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-4 text-sm">
+                  {[
+                    "$0.12M",
+                    "$0.120M",
+                    "$0.1200M",
+                    "$12.0M",
+                    "$12.00M",
+                    "$12.000M",
+                    "$1.20M",
+                    "$1.200M",
+                    "$1.2000M",
+                    "$120.0M",
+                    "$120.00M",
+                    "$120.000M",
+                  ].map((val) => (
+                    <div
+                      key={val}
+                      className="p-2 bg-white dark:bg-neutral-800 rounded border border-blue-200 dark:border-blue-800"
+                    >
+                      <div className="font-mono text-center">{val}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Section>
+
           <Section title="Stress Test: Dense Price Grid">
             <div className="grid grid-cols-8 md:grid-cols-12 gap-1 text-xs">
               {Array.from({ length: 200 }, (_, i) => {

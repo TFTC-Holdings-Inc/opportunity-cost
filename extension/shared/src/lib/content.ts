@@ -113,11 +113,11 @@ async function main() {
         if (parts.length > 2) {
           return v.replace(/\./g, ""); // -> "1425000"
         }
-        // If one period is used and the part after it has 3 digits, assume it's a thousands separator.
-        if (parts.length === 2 && parts[1].length === 3) {
+        // If one period is used and the part after it has 3 digits AND contains only digits, assume it's a thousands separator.
+        if (parts.length === 2 && parts[1].length === 3 && /^\d+$/.test(parts[1])) {
           return v.replace(/\./g, ""); // -> "1425"
         }
-        // Otherwise, assume the single period is a decimal separator (e.g., "123.45").
+        // Otherwise, assume the single period is a decimal separator (e.g., "123.45" or "0.12M").
         return v;
       }
 
@@ -154,6 +154,7 @@ async function main() {
         q: 1e15,
         quadrillion: 1e15,
       };
+
       const cleaned = normalizeLocaleNumber(
         str
           .replace(currencySymbol ? new RegExp(escapeRegex(currencySymbol), "g") : currencyRegex, "")
@@ -164,6 +165,7 @@ async function main() {
       const [, numStr, rawSuffix] = match;
       const suffix = (rawSuffix ?? "").toLowerCase();
       const multiplier = multipliers[suffix] ?? 1;
+
       return parseFloat(numStr) * multiplier;
     }
 
