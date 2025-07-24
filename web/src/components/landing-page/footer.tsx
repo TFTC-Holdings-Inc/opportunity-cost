@@ -42,6 +42,14 @@ export function Footer() {
               </li>
               <li className="mb-2">
                 <Link
+                  href="/blog"
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Blog
+                </Link>
+              </li>
+              <li className="mb-2">
+                <Link
                   href="/#about"
                   className="text-gray-300 hover:text-white transition"
                 >
