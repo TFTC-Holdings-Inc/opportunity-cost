@@ -26,6 +26,7 @@ export interface UserPreferences {
   disabledSites?: string[]; // Array of hostnames where the extension is disabled
   darkMode?: boolean; // Flag for dark mode (deprecated, kept for backward compatibility)
   themeMode?: "system" | "light" | "dark"; // New theme mode preference
+  saylorMode?: boolean; // Saylor Mode - shows future prices at $21M BTC
   lastUpdated?: number;
 }
 
@@ -389,6 +390,7 @@ const PriceDatabase = {
               disabledSites: [],
               darkMode: false,
               themeMode: "system",
+              saylorMode: false,
               lastUpdated: Date.now(),
             };
 
@@ -416,6 +418,7 @@ const PriceDatabase = {
             disabledSites: [],
             darkMode: false,
             themeMode: "system",
+            saylorMode: false,
             lastUpdated: Date.now(),
           };
           resolve(defaultPrefs);

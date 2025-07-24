@@ -38,6 +38,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 // Custom event name for display mode changes
 const DISPLAY_MODE_CHANGE_EVENT = "display-mode-change";
+// NEW: Custom event name for default currency changes
+const DEFAULT_CURRENCY_CHANGE_EVENT = "default-currency-change";
 
 // --- Header ---
 function Header() {
@@ -131,6 +133,12 @@ function LivePrice() {
       await browser.runtime.sendMessage({ action: "preferencesUpdated" });
       // Refresh prices to ensure latest values are shown
       fetchPrices();
+      // Notify other components about the currency change
+      document.dispatchEvent(
+        new CustomEvent(DEFAULT_CURRENCY_CHANGE_EVENT, {
+          detail: { defaultCurrency: newCurrency },
+        }),
+      );
     } catch (err) {
       console.error("Error updating default currency:", err);
     }
@@ -317,6 +325,59 @@ function Converter() {
 
     fetchData();
   }, []);
+
+  // Listen for default currency changes from LivePrice
+  useEffect(() => {
+    const handleDefaultCurrencyChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ defaultCurrency: string }>;
+      const newCurrency = customEvent.detail?.defaultCurrency;
+      if (newCurrency) {
+        // Update currency state first
+        setCurrency(newCurrency);
+
+        // Retrieve the price for the newly-selected currency
+        const priceForNewCurrency = prices[newCurrency];
+        if (!priceForNewCurrency) {
+          // If we don't have the price yet, we can't recalculate – exit early
+          return;
+        }
+
+        // Recalculate based on the last edited field using *new* currency pricing
+        if (lastEdited === "fiat" && fiatAmount) {
+          const numValue = parseFloat(fiatAmount.replace(/,/g, ""));
+          if (!isNaN(numValue)) {
+            const inBtc = numValue / priceForNewCurrency;
+
+            if (localDenomination === "sats") {
+              const inSats = Math.round(inBtc * SATS_IN_BTC);
+              setBtcAmount(inSats.toString());
+            } else {
+              if (inBtc < 0.000001) {
+                setBtcAmount(inBtc.toFixed(8));
+              } else if (inBtc < 0.0001) {
+                setBtcAmount(inBtc.toFixed(6));
+              } else {
+                setBtcAmount(inBtc.toFixed(5));
+              }
+            }
+          }
+        } else if (lastEdited === "btc" && btcAmount) {
+          const numValue = parseFloat(btcAmount.replace(/,/g, ""));
+          if (!isNaN(numValue)) {
+            const inBtc = localDenomination === "sats" ? numValue / SATS_IN_BTC : numValue;
+            const fiatValue = inBtc * priceForNewCurrency;
+            setFiatAmount(fiatValue.toFixed(2));
+          }
+        }
+      }
+    };
+
+    document.addEventListener(DEFAULT_CURRENCY_CHANGE_EVENT, handleDefaultCurrencyChange);
+
+    return () => {
+      document.removeEventListener(DEFAULT_CURRENCY_CHANGE_EVENT, handleDefaultCurrencyChange);
+    };
+  }, [lastEdited, fiatAmount, btcAmount, prices, localDenomination]);
 
   // Convert fiat to Bitcoin
   const convertFiatToBtc = (fiatValue: number): string => {
@@ -536,13 +597,13 @@ function Converter() {
             </select>
           </div>
           <div className="relative">
-            <label htmlFor="fiat-input" className="absolute left-0 top-0 text-lg text-gray-300 dark:text-gray-500">
-              {currencySymbol}
+            <label htmlFor="fiat-input" className="absolute right-0 top-0 text-lg text-gray-300 dark:text-gray-500">
+              {currency.toUpperCase()}
             </label>
             <Cleave
               id="fiat-input"
-              className="w-full border-none bg-transparent pl-4 text-lg text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-0 dark:text-gray-200 dark:placeholder:text-gray-500"
-              placeholder={`${currency.toUpperCase()}`}
+              className="w-full border-none bg-transparent pr-4 text-lg text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-0 dark:text-gray-200 dark:placeholder:text-gray-500"
+              placeholder={currencySymbol}
               value={fiatAmount}
               onChange={handleFiatChange}
               onFocus={() => {

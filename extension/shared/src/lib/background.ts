@@ -238,12 +238,19 @@ browser.runtime.onMessage.addListener(
     // Get Bitcoin prices only
     if (message.action === "getBitcoinPrices") {
       getAllBitcoinPrices()
-        .then((prices) => {
+        .then(async (prices) => {
           if (!prices) {
             sendResponse({ error: "Failed to get Bitcoin prices" });
             return;
           }
-          sendResponse({ prices });
+
+          // Load preferences to check if Saylor Mode is enabled
+          if (!userPreferences) {
+            await loadUserPreferences();
+          }
+
+          // Send actual prices - Saylor Mode calculation will be done in content script
+          sendResponse({ prices: prices });
         })
         .catch((error: Error) => {
           console.error("Error in getBitcoinPrices:", error);
@@ -276,7 +283,7 @@ browser.runtime.onMessage.addListener(
     // Legacy handler for backward compatibility
     else if (message.action === "getAllBitcoinPrices") {
       getAllBitcoinPrices()
-        .then((prices) => {
+        .then(async (prices) => {
           if (!prices) {
             sendResponse({ error: "Failed to get Bitcoin prices" });
             return;
@@ -284,10 +291,15 @@ browser.runtime.onMessage.addListener(
 
           // Load preferences if needed
           if (!userPreferences) {
+            await loadUserPreferences();
+          }
+
+          // Send actual prices - Saylor Mode calculation will be done in content script
+          if (!userPreferences) {
             loadUserPreferences()
               .then((prefs) => {
                 sendResponse({
-                  prices,
+                  prices: prices,
                   supportedCurrencies: SUPPORTED_CURRENCIES,
                   preferences: prefs,
                 });
@@ -295,14 +307,14 @@ browser.runtime.onMessage.addListener(
               .catch((error: Error) => {
                 console.error("Error loading preferences:", error);
                 sendResponse({
-                  prices,
+                  prices: prices,
                   supportedCurrencies: SUPPORTED_CURRENCIES,
                   error: "Error loading preferences: " + error.message,
                 });
               });
           } else {
             sendResponse({
-              prices,
+              prices: prices,
               supportedCurrencies: SUPPORTED_CURRENCIES,
               preferences: userPreferences,
             });

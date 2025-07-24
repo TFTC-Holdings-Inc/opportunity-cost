@@ -69,22 +69,62 @@ async function main() {
     });
 
     function normalizeLocaleNumber(raw: string): string {
+      // Clean the raw string by removing currency symbols and trimming whitespace.
       const v = raw
         .replace(/\bEUR\b/gi, "")
         .replace(/€/g, "")
         .trim();
 
-      // Handles European and US number formats, normalizing to a standard decimal format
-      if (/\.\d{3},\d{2}$/.test(v)) {
-        return v.replace(/\./g, "").replace(",", ".");
+      const hasPeriod = v.includes(".");
+      const hasComma = v.includes(",");
+
+      // If no separators are present, no action is needed.
+      if (!hasPeriod && !hasComma) {
+        return v;
       }
-      if (/^\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(v)) {
-        return v.replace(/,/g, "");
+
+      // Case 1: Both period and comma are present.
+      if (hasPeriod && hasComma) {
+        const lastPeriodIndex = v.lastIndexOf(".");
+        const lastCommaIndex = v.lastIndexOf(",");
+
+        // If comma comes last, it's a European-style decimal (e.g., "1.234,56").
+        if (lastCommaIndex > lastPeriodIndex) {
+          return v.replace(/\./g, "").replace(",", "."); // -> "1234.56"
+        } else {
+          // If period comes last, it's a US-style decimal (e.g., "1,234.56").
+          return v.replace(/,/g, ""); // -> "1234.56"
+        }
       }
-      if (!v.includes(".") && v.split(",").length === 2 && v.split(",")[1].length <= 2) {
-        return v.replace(",", ".");
+
+      // Case 2: Only periods are present (e.g., "1.425.000" or "1.425").
+      if (hasPeriod && !hasComma) {
+        const parts = v.split(".");
+        // If there are multiple periods, they must be thousands separators.
+        if (parts.length > 2) {
+          return v.replace(/\./g, ""); // -> "1425000"
+        }
+        // If one period is used and the part after it has 3 digits, assume it's a thousands separator.
+        if (parts.length === 2 && parts[1].length === 3) {
+          return v.replace(/\./g, ""); // -> "1425"
+        }
+        // Otherwise, assume the single period is a decimal separator (e.g., "123.45").
+        return v;
       }
-      return v.replace(/,/g, "");
+
+      // Case 3: Only commas are present (e.g., "1,234" or "1,23").
+      if (hasComma && !hasPeriod) {
+        const parts = v.split(",");
+        // If the part after the last comma is not 3 digits, assume it's a decimal (e.g., "99,9").
+        if (parts[parts.length - 1].length !== 3) {
+          return v.replace(/,/g, "."); // -> "99.9"
+        }
+        // Otherwise, they are thousands separators.
+        return v.replace(/,/g, ""); // -> "1234"
+      }
+
+      // Fallback for any unhandled case.
+      return v;
     }
 
     /**
@@ -126,39 +166,35 @@ async function main() {
       });
 
     // Helper to abbreviate large satoshi values (e.g., 100000 -> 100k, 1000000 -> 1M)
-    const abbreviateSats = (sats: number): string => {
-      const thresholds: [number, string][] = [
-        [1e15, "Q"],
-        [1e12, "T"],
-        [1e9, "B"],
-        [1e6, "M"],
-        [1e3, "k"],
-      ];
-      for (const [value, suffix] of thresholds) {
-        if (sats >= value) {
-          const shortened = sats / value;
-          // Use fewer decimals for larger numbers
-          const decimals = shortened >= 100 ? 0 : shortened >= 10 ? 1 : 2;
-          const formatted = shortened.toLocaleString(undefined, {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: decimals,
-          });
-          return `${formatted}${suffix}`;
-        }
-      }
-      return sats.toLocaleString();
-    };
+    // const abbreviateSats = (sats: number): string => {
+    //   const thresholds: [number, string][] = [
+    //     [1e15, "Q"],
+    //     [1e12, "T"],
+    //     [1e9, "B"],
+    //     [1e6, "M"],
+    //     [1e3, "k"],
+    //   ];
+    //   for (const [value, suffix] of thresholds) {
+    //     if (sats >= value) {
+    //       const shortened = sats / value;
+    //       // Use fewer decimals for larger numbers
+    //       const decimals = shortened >= 100 ? 0 : shortened >= 10 ? 1 : 2;
+    //       const formatted = shortened.toLocaleString(undefined, {
+    //         minimumFractionDigits: 0,
+    //         maximumFractionDigits: decimals,
+    //       });
+    //       return `${formatted}${suffix}`;
+    //     }
+    //   }
+    //   return sats.toLocaleString();
+    // };
 
     // Formats a bitcoin value (in satoshis) according to user denomination preference
     const formatBitcoinValue = (satoshis: number): string => {
       const btc = satoshis / SATS_IN_BTC;
       if (btc >= 100) return `${fmt(btc, 0)} BTC`;
       if (userPreferences.denomination === "dynamic") {
-        if (btc < 0.01) {
-          const satsStr = satoshis >= 100_000 ? abbreviateSats(satoshis) : fmt(satoshis, 0);
-          return `${satsStr} sats`;
-        }
-        return `${fmt(btc, 2)} BTC`;
+        return btc < 0.01 ? `${fmt(satoshis, 0)} sats` : `${fmt(btc, 2)} BTC`;
       }
       if (userPreferences.denomination === "btc") {
         if (btc >= 1) return `${fmt(btc, 2)} BTC`;
@@ -170,9 +206,7 @@ async function main() {
           maximumFractionDigits: 8,
         })} BTC`;
       }
-      // Sats denomination
-      const satsStr = satoshis >= 100_000 ? abbreviateSats(satoshis) : fmt(satoshis, 0);
-      return `${satsStr} sats`;
+      return `${fmt(satoshis, 0)} sats`;
     };
 
     // Fetches the latest Bitcoin prices for all supported currencies from the background script

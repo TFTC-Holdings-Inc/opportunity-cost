@@ -11,6 +11,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BitcoinTimeMachine } from "@/components/bitcoin-time-machine";
 import type { UserPreferences } from "./storage";
+import { SAYLOR_TARGET_PRICE } from "./constants";
 
 async function main() {
   try {
@@ -41,6 +42,12 @@ async function main() {
       return;
     }
 
+    // Check if the body has the disabled attribute
+    if (document.body?.getAttribute("data-opp-cost-disabled") === "true") {
+      console.log("Opportunity Cost: Extension is disabled for this page via data-opp-cost-disabled attribute");
+      return;
+    }
+
     // Listen for updates to user preferences from the background script
     browser.runtime.onMessage.addListener(async (message) => {
       if (message?.action === "preferencesUpdated") {
@@ -50,6 +57,7 @@ async function main() {
           highlightBitcoinValue: userPreferences.highlightBitcoinValue,
           disabledSites: userPreferences.disabledSites,
           defaultCurrency: userPreferences.defaultCurrency,
+          saylorMode: userPreferences.saylorMode,
         };
 
         await getUserPreferences(); // This updates the userPreferences variable
@@ -60,6 +68,7 @@ async function main() {
           highlightBitcoinValue: userPreferences.highlightBitcoinValue,
           disabledSites: userPreferences.disabledSites,
           defaultCurrency: userPreferences.defaultCurrency,
+          saylorMode: userPreferences.saylorMode,
         };
 
         if (JSON.stringify(relevantOldPrefs) !== JSON.stringify(relevantNewPrefs)) {
@@ -107,11 +116,11 @@ async function main() {
         if (parts.length > 2) {
           return v.replace(/\./g, ""); // -> "1425000"
         }
-        // If one period is used and the part after it has 3 digits, assume it's a thousands separator.
-        if (parts.length === 2 && parts[1].length === 3) {
+        // If one period is used and the part after it has 3 digits AND contains only digits, assume it's a thousands separator.
+        if (parts.length === 2 && parts[1].length === 3 && /^\d+$/.test(parts[1])) {
           return v.replace(/\./g, ""); // -> "1425"
         }
-        // Otherwise, assume the single period is a decimal separator (e.g., "123.45").
+        // Otherwise, assume the single period is a decimal separator (e.g., "123.45" or "0.12M").
         return v;
       }
 
@@ -148,6 +157,7 @@ async function main() {
         q: 1e15,
         quadrillion: 1e15,
       };
+
       const cleaned = normalizeLocaleNumber(
         str
           .replace(currencySymbol ? new RegExp(escapeRegex(currencySymbol), "g") : currencyRegex, "")
@@ -158,6 +168,7 @@ async function main() {
       const [, numStr, rawSuffix] = match;
       const suffix = (rawSuffix ?? "").toLowerCase();
       const multiplier = multipliers[suffix] ?? 1;
+
       return parseFloat(numStr) * multiplier;
     }
 
@@ -210,6 +221,45 @@ async function main() {
         })} BTC`;
       }
       return `${fmt(satoshis, 0)} sats`;
+    };
+
+    // Formats a Saylor Mode value (future price at $21M BTC)
+    const formatSaylorModeValue = (fiatValue: number, currencySymbol: string): string => {
+      const usdPrice = btcPrices.usd;
+      if (!usdPrice) {
+        console.error("USD price not available for Saylor Mode calculation");
+        return `${fiatValue.toFixed(2)}`;
+      }
+
+      const multiplier = SAYLOR_TARGET_PRICE / usdPrice;
+
+      // Future value = current fiat price * multiplier
+      const futureValue = fiatValue * multiplier;
+
+      // Format large numbers with abbreviations for values over 6 figures (1,000,000)
+      if (futureValue >= 1000000) {
+        const thresholds: [number, string][] = [
+          [1e15, "Q"],
+          [1e12, "T"],
+          [1e9, "B"],
+          [1e6, "M"],
+        ];
+
+        for (const [value, suffix] of thresholds) {
+          if (futureValue >= value) {
+            const shortened = futureValue / value;
+            // Use fewer decimals for larger numbers
+            const decimals = shortened >= 100 ? 0 : shortened >= 10 ? 1 : 2;
+            const formatted = shortened.toLocaleString(undefined, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: decimals,
+            });
+            return `${currencySymbol}${formatted}${suffix}`;
+          }
+        }
+      }
+
+      return `${currencySymbol}${fmt(futureValue, 2)}`;
     };
 
     // Fetches the latest Bitcoin prices for all supported currencies from the background script
@@ -322,9 +372,29 @@ async function main() {
         if (element.isContentEditable) {
           return;
         }
+        // Skip elements that are already processed
+        if (element.dataset.ocProcessed === "true") {
+          return;
+        }
+        // Skip elements that already contain our Bitcoin price spans
+        if (element.classList.contains("oc-btc-price") || element.querySelector(".oc-btc-price")) {
+          return;
+        }
+        // Skip elements that are children of elements with data-opp-cost-disabled="true"
+        if (element.closest('[data-opp-cost-disabled="true"]')) {
+          return;
+        }
       }
       if (node.nodeType === Node.TEXT_NODE) {
         if (node.parentElement && node.parentElement.closest("[contenteditable=true], [contenteditable='']")) {
+          return;
+        }
+        // Skip text nodes that are inside our Bitcoin price spans
+        if (node.parentElement && node.parentElement.closest(".oc-btc-price")) {
+          return;
+        }
+        // Skip text nodes that are children of elements with data-opp-cost-disabled="true"
+        if (node.parentElement && node.parentElement.closest('[data-opp-cost-disabled="true"]')) {
           return;
         }
         replacePrice(node as Text);
@@ -349,7 +419,16 @@ async function main() {
       const content = textNode.textContent || "";
       const parent = textNode.parentNode;
       if (!(parent instanceof HTMLElement)) return;
-      if (parent.dataset.ocProcessed === "true") return;
+
+      // Check the entire ancestor chain for ocProcessed
+      let ancestor: HTMLElement | null = parent;
+      while (ancestor) {
+        if (ancestor instanceof HTMLElement && ancestor.dataset.ocProcessed === "true") {
+          return;
+        }
+        ancestor = ancestor.parentElement;
+      }
+
       const defaultCurrency = userPreferences.defaultCurrency;
       const currency = supportedCurrencies.find((c) => c.value === defaultCurrency);
       if (!currency || !currency.symbol) return;
@@ -393,7 +472,16 @@ async function main() {
         const satsValue = Math.round((fiatValue / btcPrice) * SATS_IN_BTC);
         const bitcoinValueSpan = document.createElement("span");
         bitcoinValueSpan.className = "oc-btc-price";
-        bitcoinValueSpan.textContent = formatBitcoinValue(satsValue);
+
+        // Check if Saylor Mode is enabled
+        if (userPreferences.saylorMode) {
+          // In Saylor Mode, display the future fiat value
+          bitcoinValueSpan.textContent = formatSaylorModeValue(fiatValue, currencySymbol);
+        } else {
+          // Normal mode - display Bitcoin value
+          bitcoinValueSpan.textContent = formatBitcoinValue(satsValue);
+        }
+
         applyBitcoinLabelStyles(bitcoinValueSpan);
 
         if (userPreferences.displayMode === "bitcoin-only") {
@@ -434,6 +522,8 @@ async function main() {
       document.querySelectorAll<HTMLSpanElement>('.a-price span[aria-hidden="true"]').forEach((vis) => {
         if (!vis || !vis.textContent || vis.children.length === 0) return;
         if (vis.querySelector(".oc-btc-price")) return;
+        // Skip elements that are children of elements with data-opp-cost-disabled="true"
+        if (vis.closest('[data-opp-cost-disabled="true"]')) return;
         const parent = vis.closest(".a-price");
         if (!parent) return;
         const currency = supportedCurrencies.find((c) => c.value === userPreferences.defaultCurrency);
@@ -443,7 +533,16 @@ async function main() {
         if (!btcPrice) return;
         const fiatValue = convertCurrencyValue(vis.textContent, currency.symbol, currency.value);
         const sats = Math.round((fiatValue / btcPrice) * SATS_IN_BTC);
-        const btcDisplay = formatBitcoinValue(sats);
+
+        let btcDisplay: string;
+        if (userPreferences.saylorMode) {
+          // In Saylor Mode, display the future fiat value
+          btcDisplay = formatSaylorModeValue(fiatValue, currency.symbol);
+        } else {
+          // Normal mode - display Bitcoin value
+          btcDisplay = formatBitcoinValue(sats);
+        }
+
         const displayMode = userPreferences.displayMode;
         const formatted = displayMode === "dual-display" ? ` | ${btcDisplay}` : btcDisplay;
         const screenReaderSpan = vis.querySelector(".a-offscreen");
@@ -488,6 +587,8 @@ async function main() {
     function processWooCommercePrices(): void {
       document.querySelectorAll<HTMLSpanElement>(".woocommerce-Price-amount.amount").forEach((amount) => {
         if (amount.dataset.ocProcessed === "true" || amount.querySelector(".oc-btc-price")) return;
+        // Skip elements that are children of elements with data-opp-cost-disabled="true"
+        if (amount.closest('[data-opp-cost-disabled="true"]')) return;
 
         const currency = supportedCurrencies.find((c) => c.value === userPreferences.defaultCurrency);
         if (!currency) return;
@@ -499,7 +600,16 @@ async function main() {
         if (isNaN(fiatValue)) return;
 
         const sats = Math.round((fiatValue / btcPrice) * SATS_IN_BTC);
-        const btcDisplay = formatBitcoinValue(sats);
+
+        let btcDisplay: string;
+        if (userPreferences.saylorMode) {
+          // In Saylor Mode, display the future fiat value
+          btcDisplay = formatSaylorModeValue(fiatValue, currency.symbol);
+        } else {
+          // Normal mode - display Bitcoin value
+          btcDisplay = formatBitcoinValue(sats);
+        }
+
         const btcSpan = document.createElement("span");
         btcSpan.className = "oc-btc-price";
         btcSpan.textContent = btcDisplay;
@@ -532,6 +642,8 @@ async function main() {
       const selector = "span[aria-hidden='true']:not([data-oc-processed])";
       document.querySelectorAll<HTMLElement>(selector).forEach((container) => {
         if (container.dataset.ocProcessed === "true" || container.querySelector(".oc-btc-price")) return;
+        // Skip elements that are children of elements with data-opp-cost-disabled="true"
+        if (container.closest('[data-opp-cost-disabled="true"]')) return;
         if (!container.textContent) return;
         if (!container.textContent.includes(currency.symbol)) return;
 
@@ -539,7 +651,15 @@ async function main() {
         if (isNaN(fiatValue)) return;
 
         const sats = Math.round((fiatValue / btcPrice) * SATS_IN_BTC);
-        const btcDisplay = formatBitcoinValue(sats);
+
+        let btcDisplay: string;
+        if (userPreferences.saylorMode) {
+          // In Saylor Mode, display the future fiat value
+          btcDisplay = formatSaylorModeValue(fiatValue, currency.symbol);
+        } else {
+          // Normal mode - display Bitcoin value
+          btcDisplay = formatBitcoinValue(sats);
+        }
 
         const btcSpan = document.createElement("span");
         btcSpan.className = "oc-btc-price";
@@ -592,7 +712,24 @@ async function main() {
       processCompositePriceElements();
       mutations.forEach((mutation: MutationRecord) => {
         if (mutation.type === "childList") {
-          mutation.addedNodes.forEach((node: Node) => walkDOM(node));
+          mutation.addedNodes.forEach((node: Node) => {
+            // Check if this node is within an already-processed element
+            let ancestor = node.parentElement;
+            let isWithinProcessed = false;
+
+            while (ancestor) {
+              if (ancestor.dataset?.ocProcessed === "true") {
+                isWithinProcessed = true;
+                break;
+              }
+              ancestor = ancestor.parentElement;
+            }
+
+            // Only process if not within a processed element
+            if (!isWithinProcessed) {
+              walkDOM(node);
+            }
+          });
         }
       });
     });

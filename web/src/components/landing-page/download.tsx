@@ -23,7 +23,7 @@ export function Download() {
               className="mb-4 size-16"
             />
             <h3 className="text-xl font-bold mb-2">Chrome Extension</h3>
-            <p className="mb-4 text-muted-foreground">Version 0.0.2</p>
+            <p className="mb-4 text-muted-foreground">Version 0.0.5</p>
             <Button
               asChild
               variant="primary"
@@ -44,7 +44,7 @@ export function Download() {
               className="mb-4 size-16"
             />
             <h3 className="text-xl font-bold mb-2">Brave Browser Extension</h3>
-            <p className="mb-4 text-muted-foreground">Version 0.0.2</p>
+            <p className="mb-4 text-muted-foreground">Version 0.0.5</p>
             <Button
               asChild
               variant="primary"
@@ -65,7 +65,7 @@ export function Download() {
               className="mb-4 size-16"
             />
             <h3 className="text-xl font-bold mb-2">Firefox Add-on</h3>
-            <p className="mb-4 text-muted-foreground">Version 0.0.2</p>
+            <p className="mb-4 text-muted-foreground">Version 0.0.5</p>
             <Button
               asChild
               variant="primary"

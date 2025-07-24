@@ -1,0 +1,47 @@
+# Saylor Mode Landing Page Plan
+
+## Overview
+Create a striking landing page at `/saylor` that explains Saylor Mode - a feature that shows what prices would be if Bitcoin reaches $21 million, based on Michael Saylor's BTC Prague 2025 prediction.
+
+## Core Implementation Steps
+
+### 1. Create Page Structure
+- [ ] Add new route `/saylor` in Next.js app directory
+- [ ] Create `app/saylor/page.tsx` component
+- [ ] Add SEO metadata for "Saylor Mode - Opportunity Cost Extension"
+
+### 2. Hero Section
+- [ ] Large hero image of Michael Saylor (front and center)
+- [ ] Bold headline: "What if Bitcoin hits $21 Million?"
+- [ ] Subheading: "Michael Saylor's 21-year prediction becomes your reality check"
+- [ ] CTA button: "Add Saylor Mode to Chrome"
+
+### 3. Prediction Visual
+- [ ] Display "$21,000,000" prominently with Bitcoin logo
+- [ ] Show timeline: "21 years" with progress indicator
+- [ ] Embed or link to Bitcoin price prediction chart
+- [ ] Quote: "I think we're going to be $21 million in 21 years"
+
+### 4. Feature Explanation
+- [ ] "What is Saylor Mode?" section
+- [ ] Show before/after price examples:
+  - [ ] Coffee: $5 → $105 (in Saylor Mode)
+  - [ ] Laptop: $1,000 → $21,000 (in Saylor Mode)
+  - [ ] Car: $30,000 → $630,000 (in Saylor Mode)
+- [ ] Explain the calculation simply
+
+### 5. Video Section
+- [ ] Embed YouTube video of Saylor's BTC Prague keynote
+- [ ] Link to full speech with compelling quote
+- [ ] "Watch the speech that inspired this feature"
+
+### 6. Call to Action
+- [ ] Download extension button (Chrome/Firefox)
+- [ ] Instructions to enable Saylor Mode
+- [ ] Link back to main site
+
+### 7. Visual Design
+- [ ] Dark theme with orange/Bitcoin accents
+- [ ] Animated price conversions on scroll
+- [ ] Parallax effect on Saylor's image
+- [ ] Clean, minimalist layout

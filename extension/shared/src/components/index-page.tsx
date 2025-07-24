@@ -5,6 +5,7 @@ import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, APP_URL } from "../lib/constant
 import { cn } from "@/lib/utils";
 import Cleave from "cleave.js/react";
 import { PriceDatabase } from "../lib/storage";
+import { SaylorModeOverlay } from "./saylor-mode-overlay";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -40,6 +41,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 const DISPLAY_MODE_CHANGE_EVENT = "display-mode-change";
 // NEW: Custom event name for default currency changes
 const DEFAULT_CURRENCY_CHANGE_EVENT = "default-currency-change";
+// Custom event for Saylor Mode activation animation
+const SAYLOR_MODE_ACTIVATED_EVENT = "saylor-mode-activated";
+// Custom event for when Saylor Mode overlay completes
+const SAYLOR_MODE_COMPLETE_EVENT = "saylor-mode-complete";
 
 // --- Header ---
 function Header() {
@@ -737,9 +742,33 @@ function Settings() {
   const [denomination, setDenomination] = useState<"sats" | "btc">("btc");
   const [displayMode, setDisplayMode] = useState<"bitcoin-only" | "dual-display">("dual-display");
   const [highlightBitcoinValue, setHighlightBitcoinValue] = useState(false);
+  const [saylorMode, setSaylorMode] = useState(false);
   const [prefsLoading, setPrefsLoading] = useState(true);
-  // const [copyLinkText, setCopyLinkText] = useState("Copy website link");
   const copyTimeoutRef = useRef<number | null>(null);
+
+  // Listen for Saylor Mode completion to reopen dropdown
+  useEffect(() => {
+    const handleSaylorModeComplete = () => {
+      // Clear any existing focus to avoid aria-hidden conflicts
+      if (document.activeElement && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      // Wait longer to ensure overlay is fully closed and focus is cleared
+      setTimeout(() => {
+        setShowSettings(true);
+      }, 200);
+    };
+
+    document.addEventListener(SAYLOR_MODE_COMPLETE_EVENT, handleSaylorModeComplete);
+
+    return () => {
+      document.removeEventListener(SAYLOR_MODE_COMPLETE_EVENT, handleSaylorModeComplete);
+    };
+  }, []);
+
+  // Compute if highlight bitcoin should be mandatory
+  const isHighlightMandatory = saylorMode && displayMode === "bitcoin-only";
 
   useEffect(() => {
     // Load user preferences
@@ -749,6 +778,7 @@ function Settings() {
         const preferences = await PriceDatabase.getPreferences();
         setDisplayMode(preferences.displayMode || "dual-display");
         setHighlightBitcoinValue(preferences.highlightBitcoinValue || false);
+        setSaylorMode(preferences.saylorMode || false);
         // Ensure only "sats" or "btc" is set, defaulting to "btc"
         const denomination = preferences.denomination === "sats" ? "sats" : "btc";
         setDenomination(denomination);
@@ -768,12 +798,41 @@ function Settings() {
     };
   }, []);
 
+  // Automatically enable highlight bitcoin when both Saylor Mode and Bitcoin-only mode are active
+  useEffect(() => {
+    if (isHighlightMandatory && !highlightBitcoinValue) {
+      setHighlightBitcoinValue(true);
+      // Save the preference automatically
+      PriceDatabase.savePreferences({ highlightBitcoinValue: true })
+        .then(() => {
+          browser.runtime.sendMessage({ action: "preferencesUpdated" });
+        })
+        .catch((error) => {
+          console.error("Error auto-saving highlight preference:", error);
+        });
+    }
+  }, [isHighlightMandatory, highlightBitcoinValue]);
+
   // Toggle Bitcoin-only mode
   const toggleBitcoinOnlyMode = async () => {
     const newMode = displayMode === "bitcoin-only" ? "dual-display" : "bitcoin-only";
     setDisplayMode(newMode);
+
+    // If switching to bitcoin-only mode and Saylor Mode is active, enable highlight bitcoin
+    const shouldEnableHighlight = newMode === "bitcoin-only" && saylorMode;
+    if (shouldEnableHighlight && !highlightBitcoinValue) {
+      setHighlightBitcoinValue(true);
+    }
+
     try {
-      await PriceDatabase.savePreferences({ displayMode: newMode });
+      const prefsToSave: { displayMode: "bitcoin-only" | "dual-display"; highlightBitcoinValue?: boolean } = {
+        displayMode: newMode,
+      };
+      if (shouldEnableHighlight) {
+        prefsToSave.highlightBitcoinValue = true;
+      }
+
+      await PriceDatabase.savePreferences(prefsToSave);
       await browser.runtime.sendMessage({ action: "preferencesUpdated" });
       document.dispatchEvent(
         new CustomEvent(DISPLAY_MODE_CHANGE_EVENT, {
@@ -787,6 +846,11 @@ function Settings() {
 
   // Toggle highlighting Bitcoin values
   const toggleHighlightBitcoinValue = async () => {
+    // Prevent disabling if it's mandatory (Saylor Mode + Bitcoin-only mode)
+    if (isHighlightMandatory && highlightBitcoinValue) {
+      return;
+    }
+
     const newHighlightValue = !highlightBitcoinValue;
     setHighlightBitcoinValue(newHighlightValue);
     try {
@@ -794,6 +858,35 @@ function Settings() {
       await browser.runtime.sendMessage({ action: "preferencesUpdated" });
     } catch (error) {
       console.error("Error saving highlight preference:", error);
+    }
+  };
+
+  // Toggle Saylor Mode
+  const toggleSaylorMode = async () => {
+    const newSaylorMode = !saylorMode;
+    setSaylorMode(newSaylorMode);
+
+    // Trigger animation only when activating Saylor Mode
+    if (newSaylorMode) {
+      document.dispatchEvent(new CustomEvent(SAYLOR_MODE_ACTIVATED_EVENT));
+    }
+
+    // If enabling Saylor Mode and Bitcoin-only mode is active, enable highlight bitcoin
+    const shouldEnableHighlight = newSaylorMode && displayMode === "bitcoin-only";
+    if (shouldEnableHighlight && !highlightBitcoinValue) {
+      setHighlightBitcoinValue(true);
+    }
+
+    try {
+      const prefsToSave: { saylorMode: boolean; highlightBitcoinValue?: boolean } = { saylorMode: newSaylorMode };
+      if (shouldEnableHighlight) {
+        prefsToSave.highlightBitcoinValue = true;
+      }
+
+      await PriceDatabase.savePreferences(prefsToSave);
+      await browser.runtime.sendMessage({ action: "preferencesUpdated" });
+    } catch (error) {
+      console.error("Error saving Saylor Mode preference:", error);
     }
   };
 
@@ -814,92 +907,130 @@ function Settings() {
   };
 
   return (
-    <Tooltip delayDuration={500}>
-      <TooltipContent>Settings</TooltipContent>
-      <DropdownMenu open={showSettings} onOpenChange={setShowSettings}>
-        <DropdownMenuTrigger asChild>
+    <DropdownMenu open={showSettings} onOpenChange={setShowSettings}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="size-8 rounded p-0 hover:bg-gray-100 focus:outline-none dark:hover:bg-gray-800"
+          aria-label="Settings"
+        >
+          <Ellipsis className="size-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-48" align="end">
+        <DropdownMenuLabel>Display</DropdownMenuLabel>
+        <DropdownMenuCheckboxItem
+          onSelect={(e) => e.preventDefault()}
+          checked={displayMode === "bitcoin-only"}
+          onCheckedChange={toggleBitcoinOnlyMode}
+          disabled={prefsLoading}
+        >
+          <span className="flex items-center">
+            <Bitcoin className={cn("mr-2 h-4 w-4", displayMode === "bitcoin-only" && "text-oc-primary")} />
+            <span className="text-primary">Bitcoin-only Mode</span>
+          </span>
+        </DropdownMenuCheckboxItem>
+        <Tooltip delayDuration={500}>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              className="size-8 rounded p-0 hover:bg-gray-100 focus:outline-none dark:hover:bg-gray-800"
-              aria-label="Settings"
-            >
-              <Ellipsis className="size-5" />
-            </Button>
+            <div>
+              <DropdownMenuCheckboxItem
+                onSelect={(e) => e.preventDefault()}
+                checked={highlightBitcoinValue}
+                onCheckedChange={toggleHighlightBitcoinValue}
+                disabled={prefsLoading || isHighlightMandatory}
+              >
+                <span className="flex items-center">
+                  <PaintbrushVertical className={cn("mr-2 h-4 w-4", highlightBitcoinValue && "text-oc-primary")} />
+                  <span className={cn("text-primary", isHighlightMandatory && "opacity-75")}>Highlight Bitcoin</span>
+                </span>
+              </DropdownMenuCheckboxItem>
+            </div>
           </TooltipTrigger>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-48" align="end">
-          <DropdownMenuLabel>Display</DropdownMenuLabel>
-          <DropdownMenuCheckboxItem
-            onSelect={(e) => e.preventDefault()}
-            checked={displayMode === "bitcoin-only"}
-            onCheckedChange={toggleBitcoinOnlyMode}
-            disabled={prefsLoading}
+          {isHighlightMandatory && (
+            <TooltipContent>
+              Automatically enabled when Saylor Mode
+              <br />
+              and Bitcoin-only mode are both active
+            </TooltipContent>
+          )}
+        </Tooltip>
+        <DropdownMenuCheckboxItem
+          onSelect={(e) => e.preventDefault()}
+          checked={saylorMode}
+          onCheckedChange={toggleSaylorMode}
+          disabled={prefsLoading}
+        >
+          <span className="flex items-center">
+            <img
+              src="saylor.jpg"
+              alt="Michael Saylor"
+              className={cn("mr-2 h-4 w-4 rounded-full object-cover", saylorMode && "ring-oc-primary/50 ring-2")}
+            />
+            <span className="text-primary">Saylor Mode ⚡</span>
+          </span>
+        </DropdownMenuCheckboxItem>
+        {saylorMode && (
+          <DropdownMenuItem
+            asChild
+            className="pl-2.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
           >
-            <span className="flex items-center">
-              <Bitcoin className={cn("mr-2 h-4 w-4", displayMode === "bitcoin-only" && "text-oc-primary")} />
-              <span className="text-primary">Bitcoin-only Mode</span>
-            </span>
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuCheckboxItem
-            onSelect={(e) => e.preventDefault()}
-            checked={highlightBitcoinValue}
-            onCheckedChange={toggleHighlightBitcoinValue}
-            disabled={prefsLoading}
-          >
-            <span className="flex items-center">
-              <PaintbrushVertical className={cn("mr-2 h-4 w-4", highlightBitcoinValue && "text-oc-primary")} />
-              <span className="text-primary">Highlight Bitcoin</span>
-            </span>
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel>Denomination</DropdownMenuLabel>
-          <DropdownMenuRadioGroup
-            value={denomination}
-            onValueChange={(value) => handleDenominationChange(value as "sats" | "btc")}
-          >
-            <DropdownMenuRadioItem
-              onSelect={(e) => e.preventDefault()}
-              value="sats"
-              className="data-[state=checked]:text-oc-primary"
+            <a className="flex items-center" href={`${APP_URL}/saylor-mode`} target="_blank">
+              <Info className="mr-1 size-3" />
+              What is Saylor Mode?
+            </a>
+          </DropdownMenuItem>
+        )}
+        {!saylorMode && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Denomination</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={denomination}
+              onValueChange={(value) => handleDenominationChange(value as "sats" | "btc")}
             >
-              Sats
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem
-              onSelect={(e) => e.preventDefault()}
-              value="btc"
-              className="data-[state=checked]:text-oc-primary"
-            >
-              BTC
-            </DropdownMenuRadioItem>
-            <Tooltip delayDuration={500}>
-              <TooltipContent>Shows BTC for prices &ge;0.01 BTC, sats otherwise.</TooltipContent>
               <DropdownMenuRadioItem
                 onSelect={(e) => e.preventDefault()}
-                value="dynamic"
-                className="data-[state=checked]:text-oc-primary gap-0"
+                value="sats"
+                className="data-[state=checked]:text-oc-primary"
               >
-                Dynamic BTC/Sats
-                <TooltipTrigger className="ml-auto">
-                  <Info className="ml-auto size-3" />
-                </TooltipTrigger>
+                Sats
               </DropdownMenuRadioItem>
-            </Tooltip>
-          </DropdownMenuRadioGroup>
+              <DropdownMenuRadioItem
+                onSelect={(e) => e.preventDefault()}
+                value="btc"
+                className="data-[state=checked]:text-oc-primary"
+              >
+                BTC
+              </DropdownMenuRadioItem>
+              <Tooltip delayDuration={500}>
+                <TooltipContent>Shows BTC for prices &ge;0.01 BTC, sats otherwise.</TooltipContent>
+                <DropdownMenuRadioItem
+                  onSelect={(e) => e.preventDefault()}
+                  value="dynamic"
+                  className="data-[state=checked]:text-oc-primary gap-0"
+                >
+                  Dynamic BTC/Sats
+                  <TooltipTrigger className="ml-auto">
+                    <Info className="ml-auto size-3" />
+                  </TooltipTrigger>
+                </DropdownMenuRadioItem>
+              </Tooltip>
+            </DropdownMenuRadioGroup>
+          </>
+        )}
 
-          <DropdownMenuSeparator />
+        <DropdownMenuSeparator />
 
-          <DropdownMenuGroup>
-            <DropdownMenuItem asChild className="flex items-center justify-between">
-              <a href="options.html" target="_blank" rel="noopener noreferrer">
-                Settings
-                <Settings2 className="ml-auto h-4 w-4" />
-              </a>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </Tooltip>
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild className="flex items-center justify-between">
+            <a href="options.html" target="_blank" rel="noopener noreferrer">
+              Settings
+              <Settings2 className="ml-auto h-4 w-4" />
+            </a>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -1072,6 +1203,7 @@ function Footer({
 export function IndexPage() {
   const [isSiteEnabled, setIsSiteEnabled] = useState<boolean | null>(null);
   const [hostname, setHostname] = useState("");
+  const [showSaylorAnimation, setShowSaylorAnimation] = useState(false);
 
   const toggleCurrentSite = async () => {
     if (!hostname) return;
@@ -1079,6 +1211,19 @@ export function IndexPage() {
     // After toggling, update the state
     setIsSiteEnabled((prev) => !prev);
   };
+
+  // Handle Saylor Mode animation
+  useEffect(() => {
+    const handleSaylorModeActivated = () => {
+      setShowSaylorAnimation(true);
+    };
+
+    document.addEventListener(SAYLOR_MODE_ACTIVATED_EVENT, handleSaylorModeActivated);
+
+    return () => {
+      document.removeEventListener(SAYLOR_MODE_ACTIVATED_EVENT, handleSaylorModeActivated);
+    };
+  }, []);
 
   // Initialize theme from preferences when popup opens
   useEffect(() => {
@@ -1209,6 +1354,14 @@ export function IndexPage() {
       <Converter />
       <CallToAction />
       <Footer isSiteEnabled={isSiteEnabled} onToggle={toggleCurrentSite} hostname={hostname} />
+      <SaylorModeOverlay
+        isActive={showSaylorAnimation}
+        onComplete={() => {
+          setShowSaylorAnimation(false);
+          // Dispatch event to reopen settings dropdown
+          document.dispatchEvent(new CustomEvent(SAYLOR_MODE_COMPLETE_EVENT));
+        }}
+      />
     </div>
   );
 }

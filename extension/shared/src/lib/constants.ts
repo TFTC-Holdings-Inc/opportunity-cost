@@ -41,3 +41,5 @@ export const SUPPORTED_CURRENCIES = [
 ];
 
 export const DEFAULT_CURRENCY = "usd";
+
+export const SAYLOR_TARGET_PRICE = 21000000; // Saylor Mode target price for Bitcoin ($21M USD)

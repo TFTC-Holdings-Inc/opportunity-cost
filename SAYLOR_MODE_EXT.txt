@@ -1,0 +1,33 @@
+# Saylor Mode Implementation Plan for Browser Extension
+
+## Overview
+Saylor Mode shows what items could cost in the future if Bitcoin reaches $21 million by converting today's price (in any supported currency) to BTC and back at the future price.
+
+## Core Implementation Steps
+
+### 1. Add Saylor Mode Preference
+- [x] Update `UserPreferences` interface in `storage.ts` to include `saylorMode?: boolean`
+- [x] Add toggle switch in settings section of `index-page.tsx`
+
+### 2. Add Constants
+- [x] Add `SAYLOR_TARGET_PRICE = 21000000` to `constants.ts`
+
+### 3. Update Content Script
+- [x] Check if Saylor Mode is enabled in `content.ts`
+- [x] When enabled, modify price conversion:
+  - [x] Convert fiat price (any currency) to BTC at current rate
+  - [x] Calculate future value: `btcAmount × $21M (converted to same currency)`
+  - [x] Display result in fiat currency
+- [x] Support all existing currencies (USD, EUR, GBP, CAD, etc.)
+
+### 4. Update Background Script
+- [x] Load and communicate Saylor Mode preference
+- [x] Convert $21M USD base to all supported currencies using current BTC rates
+- [x] Provide target prices to content script
+
+## Implementation Complete!
+All steps have been successfully implemented. The Saylor Mode feature now:
+- Shows future prices at $21M BTC when enabled
+- Works with all supported currencies
+- Displays prices with "@$21M" suffix for clarity
+- Integrates seamlessly with existing display modes
