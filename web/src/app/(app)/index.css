@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -164,6 +165,130 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .prose ul li,
+  .prose ol li {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+@layer components {
+  /* Grid pattern for hero backgrounds */
+  .bg-grid-pattern {
+    background-image: radial-gradient(
+      circle at 25px 25px,
+      rgba(255, 255, 255, 0.1) 2px,
+      transparent 0
+    );
+    background-size: 50px 50px;
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Modern glass effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .prose {
+    line-height: 1.75;
+  }
+
+  .prose p {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    scroll-margin-top: 6rem;
+  }
+
+  .prose h1:first-child,
+  .prose h2:first-child,
+  .prose h3:first-child {
+    margin-top: 0;
+  }
+
+  .prose blockquote {
+    font-style: normal;
+    font-weight: 400;
+    margin: 2em 0;
+    padding-left: 1.5em;
+    border-left-width: 4px;
+  }
+
+  .prose code {
+    font-size: 0.875em;
+    font-weight: 500;
+  }
+
+  .prose pre {
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 2em 0;
+    overflow-x: auto;
+  }
+
+  .prose img {
+    border-radius: 0.75rem;
+    margin: 2em 0;
+  }
+
+  .prose hr {
+    margin: 3em 0;
+    border-top-width: 1px;
+    opacity: 0.3;
+  }
+
+  .prose ul,
+  .prose ol {
+    margin: 1.5em 0;
+    padding-left: 1.5em;
+  }
+
+  .prose li {
+    margin: 0.5em 0;
+  }
+
+  .prose table {
+    margin: 2em 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .prose th,
+  .prose td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .prose th {
+    background-color: var(--muted);
+    font-weight: 600;
   }
 }
 

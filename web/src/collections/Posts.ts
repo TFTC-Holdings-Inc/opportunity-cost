@@ -51,7 +51,7 @@ export const Posts: CollectionConfig = {
       },
       hooks: {
         beforeValidate: [
-          ({ value, originalDoc, data }) => {
+          ({ value, data }) => {
             if (value) {
               return value
                 .toLowerCase()
@@ -174,7 +174,7 @@ export const Posts: CollectionConfig = {
             {
               name: "categories",
               type: "relationship",
-              relationTo: "categories",
+              relationTo: "",
               hasMany: true,
               admin: {
                 description: "Categories for organizing posts",

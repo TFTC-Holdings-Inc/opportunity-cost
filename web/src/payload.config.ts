@@ -23,9 +23,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     meta: {
-      titleSuffix: " - Opportunity Cost CMS",
-      favicon: "/favicon.ico",
-      ogImage: "/images/og-image.png",
+      titleSuffix: " - Opportunity Cost",
     },
     css: path.resolve(dirname, "../app/(payload)/custom.scss"),
   },
