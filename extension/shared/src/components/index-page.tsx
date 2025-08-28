@@ -739,7 +739,7 @@ function Converter() {
 // --- Settings ---
 function Settings() {
   const [showSettings, setShowSettings] = useState(false);
-  const [denomination, setDenomination] = useState<"sats" | "btc">("btc");
+  const [denomination, setDenomination] = useState<"sats" | "btc" | "₿">("btc");
   const [displayMode, setDisplayMode] = useState<"bitcoin-only" | "dual-display">("dual-display");
   const [highlightBitcoinValue, setHighlightBitcoinValue] = useState(false);
   const [saylorMode, setSaylorMode] = useState(false);
@@ -779,9 +779,9 @@ function Settings() {
         setDisplayMode(preferences.displayMode || "dual-display");
         setHighlightBitcoinValue(preferences.highlightBitcoinValue || false);
         setSaylorMode(preferences.saylorMode || false);
-        // Ensure only "sats" or "btc" is set, defaulting to "btc"
-        const denomination = preferences.denomination === "sats" ? "sats" : "btc";
-        setDenomination(denomination);
+        // Handle all denomination options, defaulting to "btc"
+        const denomination = preferences.denomination || "btc";
+        setDenomination(denomination as "sats" | "btc" | "₿");
       } catch (error) {
         console.error("Error loading preferences:", error);
       } finally {
@@ -891,7 +891,7 @@ function Settings() {
   };
 
   // Handle denomination change
-  const handleDenominationChange = async (newDenomination: "sats" | "btc") => {
+  const handleDenominationChangeInSettings = async (newDenomination: "sats" | "btc" | "₿") => {
     setDenomination(newDenomination);
     try {
       await PriceDatabase.savePreferences({ denomination: newDenomination });
@@ -986,7 +986,7 @@ function Settings() {
             <DropdownMenuLabel>Denomination</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={denomination}
-              onValueChange={(value) => handleDenominationChange(value as "sats" | "btc")}
+              onValueChange={(value) => handleDenominationChangeInSettings(value as "sats" | "btc" | "₿")}
             >
               <DropdownMenuRadioItem
                 onSelect={(e) => e.preventDefault()}
@@ -1001,6 +1001,13 @@ function Settings() {
                 className="data-[state=checked]:text-oc-primary"
               >
                 BTC
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem
+                onSelect={(e) => e.preventDefault()}
+                value="₿"
+                className="data-[state=checked]:text-oc-primary"
+              >
+                ₿
               </DropdownMenuRadioItem>
               <Tooltip delayDuration={500}>
                 <TooltipContent>Shows BTC for prices &ge;0.01 BTC, sats otherwise.</TooltipContent>

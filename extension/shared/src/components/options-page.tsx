@@ -13,7 +13,7 @@ export function OptionsPage() {
   // State for form fields
   const [defaultCurrency, setDefaultCurrency] = useState(DEFAULT_CURRENCY);
   const [displayMode, setDisplayMode] = useState<"bitcoin-only" | "dual-display">("dual-display");
-  const [denomination, setDenomination] = useState<"btc" | "sats" | "dynamic">("btc");
+  const [denomination, setDenomination] = useState<"btc" | "sats" | "₿" | "dynamic">("btc");
   const [highlightBitcoinValue, sethighlightBitcoinValue] = useState(false);
   const [saylorMode, setSaylorMode] = useState(false);
   const [disabledSites, setDisabledSites] = useState<string[]>([]);
@@ -236,10 +236,11 @@ export function OptionsPage() {
                     id="denomination"
                     className="w-full rounded border border-gray-300 p-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     value={denomination}
-                    onChange={(e) => setDenomination(e.target.value as "btc" | "sats" | "dynamic")}
+                    onChange={(e) => setDenomination(e.target.value as "btc" | "sats" | "₿" | "dynamic")}
                   >
                     <option value="sats">Satoshis</option>
                     <option value="btc">Bitcoin</option>
+                    <option value="₿">₿</option>
                     <option value="dynamic">Dynamic</option>
                   </select>
                 </div>
@@ -407,7 +408,12 @@ export function OptionsPage() {
       </div>
 
       <Tooltip delayDuration={700}>
-        <TooltipContent>Dynamic mode switches between BTC and sats based on the value.</TooltipContent>
+        <TooltipContent>
+          <div>
+            <p><strong>Dynamic:</strong> Switches between BTC and sats based on the value.</p>
+            <p><strong>₿:</strong> Always shows full satoshi amount with Bitcoin symbol (e.g., ₿12,345).</p>
+          </div>
+        </TooltipContent>
       </Tooltip>
     </div>
   );

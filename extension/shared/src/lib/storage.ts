@@ -21,7 +21,7 @@ export interface UserPreferences {
   id: string;
   defaultCurrency?: string;
   displayMode?: "bitcoin-only" | "dual-display";
-  denomination?: "btc" | "sats" | "dynamic";
+  denomination?: "btc" | "sats" | "₿" | "dynamic";
   highlightBitcoinValue?: boolean;
   disabledSites?: string[]; // Array of hostnames where the extension is disabled
   darkMode?: boolean; // Flag for dark mode (deprecated, kept for backward compatibility)

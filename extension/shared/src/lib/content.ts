@@ -217,6 +217,9 @@ async function main() {
           maximumFractionDigits: 8,
         })} BTC`;
       }
+      if (userPreferences.denomination === "₿") {
+        return `₿${fmt(satoshis, 0)}`;
+      }
       return `${fmt(satoshis, 0)} sats`;
     };
 
