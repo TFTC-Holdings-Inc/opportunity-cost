@@ -412,6 +412,15 @@ async function main() {
         label.style.padding = "0 4px";
         label.style.borderRadius = "4px";
       }
+      
+      // Apply bitcoin-symbol class for sans-serif rendering if element contains ₿
+      if (label.textContent && label.textContent.includes("₿")) {
+        label.classList.add("bitcoin-symbol");
+        // Force inline style for maximum override power
+        label.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+        label.style.fontStyle = "normal";
+        label.style.fontVariant = "normal";
+      }
     }
 
     // Replaces fiat prices in text nodes with their bitcoin equivalent, for the default currency only

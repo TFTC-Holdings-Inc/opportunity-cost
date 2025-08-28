@@ -240,7 +240,7 @@ export function OptionsPage() {
                   >
                     <option value="sats">Satoshis</option>
                     <option value="btc">Bitcoin</option>
-                    <option value="₿">₿</option>
+                    <option value="₿" className="bitcoin-symbol">₿</option>
                     <option value="dynamic">Dynamic</option>
                   </select>
                 </div>

@@ -1007,7 +1007,7 @@ function Settings() {
                 value="₿"
                 className="data-[state=checked]:text-oc-primary"
               >
-                ₿
+                <span className="bitcoin-symbol">₿</span>
               </DropdownMenuRadioItem>
               <Tooltip delayDuration={500}>
                 <TooltipContent>Shows BTC for prices &ge;0.01 BTC, sats otherwise.</TooltipContent>
