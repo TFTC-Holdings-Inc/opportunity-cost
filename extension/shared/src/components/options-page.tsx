@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
 import browser from "webextension-polyfill";
 import { PriceDatabase } from "../lib/storage";
+import { translations as enTranslations } from "../locales/en";
+import { translations as ptTranslations } from "../locales/pt";
 import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from "../lib/constants";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent } from "./ui/tooltip";
 import { X } from "lucide-react";
+
+// --- i18n Helper ---
+const getTranslations = () => {
+  const lang = browser.i18n.getUILanguage();
+  return lang.startsWith("pt") ? ptTranslations : enTranslations;
+};
 
 // Theme types for more flexibility
 type ThemeMode = "system" | "light" | "dark";
@@ -23,6 +31,9 @@ export function OptionsPage() {
   const [saveMessage, setSaveMessage] = useState(false);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [settingsError, setSettingsError] = useState<string | null>(null);
+
+  // Get translations
+  const t = getTranslations();
 
   // Compute if highlight bitcoin should be mandatory
   const isHighlightMandatory = saylorMode && displayMode === "bitcoin-only";
@@ -191,14 +202,14 @@ export function OptionsPage() {
     >
       <div className="mb-6 flex items-center">
         <img src="icons/logo.svg" alt="TFTC Logo" className="mr-3 h-8" />
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t.optionsTitle}</h1>
       </div>
 
       <div className="space-y-6">
         {/* Main Settings */}
         <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
           {loadingSettings ? (
-            <div className="text-gray-400 dark:text-gray-500">Loading...</div>
+            <div className="text-gray-400 dark:text-gray-500">{t.loadingOptions}</div>
           ) : settingsError ? (
             <div className="text-red-500">{settingsError}</div>
           ) : (
@@ -209,7 +220,7 @@ export function OptionsPage() {
                     htmlFor="default-currency"
                     className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Default Currency
+                    {t.defaultCurrencyLabel}
                   </label>
                   <select
                     id="default-currency"
@@ -230,7 +241,7 @@ export function OptionsPage() {
                     htmlFor="denomination"
                     className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Bitcoin Unit
+                    {t.bitcoinUnitLabel}
                   </label>
                   <select
                     id="denomination"
@@ -238,9 +249,9 @@ export function OptionsPage() {
                     value={denomination}
                     onChange={(e) => setDenomination(e.target.value as "btc" | "sats" | "dynamic")}
                   >
-                    <option value="sats">Satoshis</option>
-                    <option value="btc">Bitcoin</option>
-                    <option value="dynamic">Dynamic</option>
+                    <option value="sats">{t.satsOption}</option>
+                    <option value="btc">{t.btcOption}</option>
+                    <option value="dynamic">{t.dynamicOption}</option>
                   </select>
                 </div>
 
@@ -249,7 +260,7 @@ export function OptionsPage() {
                     htmlFor="display-mode"
                     className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Display Mode
+                    {t.displayModeLabel}
                   </label>
                   <select
                     id="display-mode"
@@ -257,8 +268,8 @@ export function OptionsPage() {
                     value={displayMode}
                     onChange={(e) => setDisplayMode(e.target.value as "bitcoin-only" | "dual-display")}
                   >
-                    <option value="dual-display">Dual Display</option>
-                    <option value="bitcoin-only">Bitcoin Only</option>
+                    <option value="dual-display">{t.dualDisplayOption}</option>
+                    <option value="bitcoin-only">{t.bitcoinOnlyOption}</option>
                   </select>
                 </div>
 
@@ -267,7 +278,7 @@ export function OptionsPage() {
                     htmlFor="theme-mode"
                     className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Theme
+                    {t.themeLabel}
                   </label>
                   <select
                     id="theme-mode"
@@ -275,9 +286,9 @@ export function OptionsPage() {
                     value={themeMode}
                     onChange={(e) => handleThemeChange(e.target.value as ThemeMode)}
                   >
-                    <option value="system">System</option>
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
+                    <option value="system">{t.systemOption}</option>
+                    <option value="light">{t.lightOption}</option>
+                    <option value="dark">{t.darkOption}</option>
                   </select>
                 </div>
               </div>
@@ -290,7 +301,7 @@ export function OptionsPage() {
                     onChange={(e) => setSaylorMode(e.target.checked)}
                     className="mr-2 rounded"
                   />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Saylor Mode ⚡</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.saylorMode}</span>
                 </label>
 
                 <label className="flex items-center">
@@ -305,22 +316,22 @@ export function OptionsPage() {
                     className="mr-2 rounded"
                   />
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Highlight Bitcoin values
+                    {t.highlightBitcoinLabel}
                     {isHighlightMandatory && <span className="ml-1 text-xs text-orange-500">*</span>}
                   </span>
                 </label>
                 {isHighlightMandatory && (
                   <p className="ml-6 text-xs text-orange-600 dark:text-orange-400">
-                    * Auto-enabled with Saylor Mode + Bitcoin-only
+                    {t.highlightMandatoryTooltip}
                   </p>
                 )}
               </div>
 
               <div className="flex items-center justify-between pt-4">
                 <Button type="submit" variant="default">
-                  Save Settings
+                  {t.saveButton}
                 </Button>
-                {saveMessage && <span className="text-sm font-medium text-green-600 dark:text-green-400">Saved!</span>}
+                {saveMessage && <span className="text-sm font-medium text-green-600 dark:text-green-400">{t.saveSuccess}</span>}
               </div>
             </form>
           )}
@@ -328,7 +339,7 @@ export function OptionsPage() {
 
         {/* Disabled Sites */}
         <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Disabled Sites</h2>
+          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{t.disabledSitesTitle}</h2>
 
           <form onSubmit={handleAddDisabledSite} className="mb-4 flex gap-2">
             <input
@@ -339,12 +350,12 @@ export function OptionsPage() {
               className="flex-1 rounded border border-gray-300 p-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             />
             <Button type="submit" variant="secondary" size="sm">
-              Add
+              {t.addSiteButton}
             </Button>
           </form>
 
           {disabledSites.length === 0 ? (
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">No disabled sites</p>
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400">{t.noDisabledSites}</p>
           ) : (
             <div className="space-y-2">
               {disabledSites.map((site) => (
@@ -366,9 +377,9 @@ export function OptionsPage() {
 
         {/* Newsletter */}
         <div className="rounded-lg bg-orange-50 p-6 text-center dark:bg-gray-800">
-          <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">Bitcoin Brief Newsletter</h3>
+          <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">{t.newsletterTitle}</h3>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-            Get Bitcoin updates and market insights from TFTC.
+            {t.newsletterDescription}
           </p>
           <Button variant="default" asChild>
             <a
@@ -376,7 +387,7 @@ export function OptionsPage() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Subscribe
+              {t.subscribeButton}
             </a>
           </Button>
         </div>
@@ -392,7 +403,7 @@ export function OptionsPage() {
             rel="noopener noreferrer"
             className="hover:underline"
           >
-            Privacy
+            {t.privacy}
           </a>{" "}
           &middot;{" "}
           <a
@@ -401,7 +412,7 @@ export function OptionsPage() {
             rel="noopener noreferrer"
             className="hover:underline"
           >
-            Feedback
+            {t.feedback}
           </a>
         </p>
       </div>

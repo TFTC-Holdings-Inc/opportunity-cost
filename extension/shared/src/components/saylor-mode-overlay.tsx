@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { translations as enTranslations } from "../locales/en";
 import { APP_URL } from "@/lib/constants";
 
 // Animation Constants
@@ -33,9 +34,10 @@ const SUBTITLE_GLOW_BLUR = "8px"; // Subtitle glow blur radius
 interface SaylorModeOverlayProps {
   isActive: boolean;
   onComplete: () => void;
+  t: typeof enTranslations;
 }
 
-export function SaylorModeOverlay({ isActive, onComplete }: SaylorModeOverlayProps) {
+export function SaylorModeOverlay({ isActive, onComplete, t }: SaylorModeOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationStartTime = useRef<number>(0);
 
@@ -188,7 +190,7 @@ export function SaylorModeOverlay({ isActive, onComplete }: SaylorModeOverlayPro
               animate={{ y: 0 }}
               transition={{ delay: TITLE_SLIDE_DELAY, duration: TITLE_SLIDE_DURATION }}
             >
-              SAYLOR MODE
+              {t.saylorModeTitle}
             </motion.h1>
 
             <motion.div
@@ -206,7 +208,7 @@ export function SaylorModeOverlay({ isActive, onComplete }: SaylorModeOverlayPro
                   textShadow: `0 0 ${SUBTITLE_GLOW_BLUR} ${BITCOIN_ORANGE}`,
                 }}
               >
-                Reprices everything for $21M per bitcoin
+                {t.saylorModeSubtitle}
               </p>
             </motion.div>
 
@@ -230,7 +232,7 @@ export function SaylorModeOverlay({ isActive, onComplete }: SaylorModeOverlayPro
                 animate={{ pointerEvents: "auto" }}
                 transition={{ delay: QUOTE_FADE_DELAY + QUOTE_FADE_DURATION }}
               >
-                Learn more
+                {t.learnMore}
               </motion.a>
             </motion.div>
 
@@ -253,7 +255,7 @@ export function SaylorModeOverlay({ isActive, onComplete }: SaylorModeOverlayPro
               }}
               whileTap={{ scale: 0.95 }}
             >
-              CONTINUE
+              {t.continue}
             </motion.button>
           </motion.div>
         </motion.div>

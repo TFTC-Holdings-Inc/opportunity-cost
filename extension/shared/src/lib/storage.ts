@@ -1,5 +1,3 @@
-/// <reference types="chrome" />
-
 import browser from "webextension-polyfill";
 
 /**

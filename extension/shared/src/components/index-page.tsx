@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import browser from "webextension-polyfill";
 import "@/index.css";
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, APP_URL } from "../lib/constants";
+import { translations as enTranslations } from "../locales/en";
+import { translations as ptTranslations } from "../locales/pt";
 import { cn } from "@/lib/utils";
 import Cleave from "cleave.js/react";
 import { PriceDatabase } from "../lib/storage";
@@ -46,8 +48,15 @@ const SAYLOR_MODE_ACTIVATED_EVENT = "saylor-mode-activated";
 // Custom event for when Saylor Mode overlay completes
 const SAYLOR_MODE_COMPLETE_EVENT = "saylor-mode-complete";
 
+// --- i18n Helper ---
+const getTranslations = () => {
+  const lang = browser.i18n.getUILanguage();
+  return lang.startsWith("pt") ? ptTranslations : enTranslations;
+};
+const t = getTranslations();
+
 // --- Header ---
-function Header() {
+function Header({ t }: { t: typeof enTranslations }) {
   const [linkCopied, setLinkCopied] = useState(false);
 
   const handleCopyLink = () => {
@@ -62,7 +71,7 @@ function Header() {
     <header className="mb-4 flex items-center gap-x-0.5">
       <a href={APP_URL} target="_blank" className="mr-auto flex items-center">
         <img src="icons/logo.svg" alt="TFTC Logo" className="mr-2 h-8" />
-        <span className="text-foreground text-lg font-bold dark:text-white">Opportunity Cost</span>
+        <span className="text-foreground text-lg font-bold dark:text-white">{t.opportunityCost}</span>
       </a>
 
       <TooltipProvider>
@@ -76,17 +85,17 @@ function Header() {
               {linkCopied ? <Check className="size-4" /> : <Link className="size-4" />}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{linkCopied ? "Link copied" : "Copy link"}</TooltipContent>
+          <TooltipContent>{linkCopied ? t.linkCopied : t.copyLink}</TooltipContent>
         </Tooltip>
 
-        <Settings />
+        <Settings t={t} />
       </TooltipProvider>
     </header>
   );
 }
 
 // --- Live Price ---
-function LivePrice() {
+function LivePrice({ t }: { t: typeof enTranslations }) {
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -152,11 +161,11 @@ function LivePrice() {
   return (
     <section className="mb-4">
       <div className="flex flex-wrap items-start justify-between">
-        <span className="font-semibold dark:text-gray-200">Bitcoin Price:</span>
+        <span className="font-semibold dark:text-gray-200">{t.bitcoinPrice}</span>
         {loading ? (
-          <span className="font-mono text-lg text-gray-400 dark:text-gray-500">Loading...</span>
+          <span className="font-mono text-lg text-gray-400 dark:text-gray-500">{t.loading}</span>
         ) : error ? (
-          <span className="text-sm text-red-500">Error: {error}</span>
+          <span className="text-sm text-red-500">{t.error}: {error}</span>
         ) : (
           <div className="group flex items-center">
             {/* Currency switcher */}
@@ -164,7 +173,7 @@ function LivePrice() {
               <PopoverTrigger asChild>
                 <button
                   className="mr-1 rounded p-1 opacity-0 transition-opacity hover:bg-gray-100 focus:outline-none group-focus-within:opacity-100 group-hover:opacity-100 dark:hover:bg-gray-800"
-                  aria-label="Change default currency"
+                  aria-label={t.changeDefaultCurrency}
                   role="combobox"
                   aria-expanded={currencyPickerOpen}
                 >
@@ -173,9 +182,9 @@ function LivePrice() {
               </PopoverTrigger>
               <PopoverContent className="h-64 w-56 p-0">
                 <Command>
-                  <CommandInput placeholder="Search default currency..." />
+                  <CommandInput placeholder={t.searchDefaultCurrency} />
                   <CommandList>
-                    <CommandEmpty>No currency found.</CommandEmpty>
+                    <CommandEmpty>{t.noCurrencyFound}</CommandEmpty>
                     <CommandGroup>
                       {supportedCurrencies.map((c) => (
                         <CommandItem
@@ -208,7 +217,7 @@ function LivePrice() {
       </div>
       <div className="flex justify-end text-xs text-gray-400 dark:text-gray-500">
         <span>
-          Last updated:{" "}
+          {t.lastUpdated}:{" "}
           {lastUpdated ? lastUpdated.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "--:--"}
         </span>
       </div>
@@ -217,7 +226,7 @@ function LivePrice() {
 }
 
 // --- Converter ---
-function Converter() {
+function Converter({ t }: { t: typeof enTranslations }) {
   const [fiatAmount, setFiatAmount] = useState<string>("");
   const [btcAmount, setBtcAmount] = useState<string>("");
   const [lastEdited, setLastEdited] = useState<"fiat" | "btc">("fiat");
@@ -555,14 +564,14 @@ function Converter() {
 
   // List of available denominations
   const denominations = [
-    { value: "sats", label: "Satoshis (sats)" },
-    { value: "btc", label: "Bitcoin (BTC)" },
+    { value: "sats", label: t.satoshis },
+    { value: "btc", label: t.bitcoinUnit },
   ];
 
   return (
     <section className="mb-4">
       <div>
-        <div className="mb-2 text-sm font-bold dark:text-gray-200">Currency Converter</div>
+        <div className="mb-2 text-sm font-bold dark:text-gray-200">{t.currencyConverter}</div>
 
         <div
           className={cn(
@@ -585,7 +594,7 @@ function Converter() {
               htmlFor="fiat-input"
               className="text-md pointer-events-none font-medium text-gray-800 dark:text-gray-200"
             >
-              Fiat
+              {t.fiat}
             </label>
             <select
               className="text-right text-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
@@ -653,7 +662,7 @@ function Converter() {
                   : "pointer-events-none translate-y-0 opacity-0",
               )}
             >
-              {lastEdited === "fiat" ? "Converting Fiat to Bitcoin" : "Converting Bitcoin to Fiat"}
+              {lastEdited === "fiat" ? t.convertingFiatToBtc : t.convertingBtcToFiat}
             </div>
           </div>
         </div>
@@ -680,7 +689,7 @@ function Converter() {
               htmlFor="btc-input"
               className="text-md pointer-events-none font-medium text-gray-800 dark:text-gray-200"
             >
-              Bitcoin
+              {t.bitcoin}
             </label>
             <select
               id="denomination-select"
@@ -737,7 +746,7 @@ function Converter() {
 }
 
 // --- Settings ---
-function Settings() {
+function Settings({ t }: { t: typeof enTranslations }) {
   const [showSettings, setShowSettings] = useState(false);
   const [denomination, setDenomination] = useState<"sats" | "btc">("btc");
   const [displayMode, setDisplayMode] = useState<"bitcoin-only" | "dual-display">("dual-display");
@@ -908,7 +917,7 @@ function Settings() {
 
   return (
     <DropdownMenu open={showSettings} onOpenChange={setShowSettings}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild aria-label={t.settings}>
         <Button
           variant="ghost"
           className="size-8 rounded p-0 hover:bg-gray-100 focus:outline-none dark:hover:bg-gray-800"
@@ -918,7 +927,7 @@ function Settings() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48" align="end">
-        <DropdownMenuLabel>Display</DropdownMenuLabel>
+        <DropdownMenuLabel>{t.display}</DropdownMenuLabel>
         <DropdownMenuCheckboxItem
           onSelect={(e) => e.preventDefault()}
           checked={displayMode === "bitcoin-only"}
@@ -927,7 +936,7 @@ function Settings() {
         >
           <span className="flex items-center">
             <Bitcoin className={cn("mr-2 h-4 w-4", displayMode === "bitcoin-only" && "text-oc-primary")} />
-            <span className="text-primary">Bitcoin-only Mode</span>
+            <span className="text-primary">{t.bitcoinOnlyMode}</span>
           </span>
         </DropdownMenuCheckboxItem>
         <Tooltip delayDuration={500}>
@@ -941,16 +950,14 @@ function Settings() {
               >
                 <span className="flex items-center">
                   <PaintbrushVertical className={cn("mr-2 h-4 w-4", highlightBitcoinValue && "text-oc-primary")} />
-                  <span className={cn("text-primary", isHighlightMandatory && "opacity-75")}>Highlight Bitcoin</span>
+                  <span className={cn("text-primary", isHighlightMandatory && "opacity-75")}>{t.highlightBitcoin}</span>
                 </span>
               </DropdownMenuCheckboxItem>
             </div>
           </TooltipTrigger>
           {isHighlightMandatory && (
             <TooltipContent>
-              Automatically enabled when Saylor Mode
-              <br />
-              and Bitcoin-only mode are both active
+              {t.saylorModeTooltip}
             </TooltipContent>
           )}
         </Tooltip>
@@ -966,7 +973,7 @@ function Settings() {
               alt="Michael Saylor"
               className={cn("mr-2 h-4 w-4 rounded-full object-cover", saylorMode && "ring-oc-primary/50 ring-2")}
             />
-            <span className="text-primary">Saylor Mode ⚡</span>
+            <span className="text-primary">{t.saylorMode}</span>
           </span>
         </DropdownMenuCheckboxItem>
         {saylorMode && (
@@ -976,14 +983,14 @@ function Settings() {
           >
             <a className="flex items-center" href={`${APP_URL}/saylor-mode`} target="_blank">
               <Info className="mr-1 size-3" />
-              What is Saylor Mode?
+              {t.whatIsSaylorMode}
             </a>
           </DropdownMenuItem>
         )}
         {!saylorMode && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Denomination</DropdownMenuLabel>
+            <DropdownMenuLabel>{t.denomination}</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={denomination}
               onValueChange={(value) => handleDenominationChange(value as "sats" | "btc")}
@@ -993,23 +1000,23 @@ function Settings() {
                 value="sats"
                 className="data-[state=checked]:text-oc-primary"
               >
-                Sats
+                {t.sats.charAt(0).toUpperCase() + t.sats.slice(1)}
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem
                 onSelect={(e) => e.preventDefault()}
                 value="btc"
                 className="data-[state=checked]:text-oc-primary"
               >
-                BTC
+                {t.btc}
               </DropdownMenuRadioItem>
               <Tooltip delayDuration={500}>
-                <TooltipContent>Shows BTC for prices &ge;0.01 BTC, sats otherwise.</TooltipContent>
+                <TooltipContent>{t.dynamicBtcSatsTooltip}</TooltipContent>
                 <DropdownMenuRadioItem
                   onSelect={(e) => e.preventDefault()}
                   value="dynamic"
                   className="data-[state=checked]:text-oc-primary gap-0"
                 >
-                  Dynamic BTC/Sats
+                  {t.dynamic}
                   <TooltipTrigger className="ml-auto">
                     <Info className="ml-auto size-3" />
                   </TooltipTrigger>
@@ -1024,7 +1031,7 @@ function Settings() {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild className="flex items-center justify-between">
             <a href="options.html" target="_blank" rel="noopener noreferrer">
-              Settings
+                {t.advancedSettings}
               <Settings2 className="ml-auto h-4 w-4" />
             </a>
           </DropdownMenuItem>
@@ -1035,7 +1042,7 @@ function Settings() {
 }
 
 // --- Call To Action ---
-function CallToAction() {
+function CallToAction({ t }: { t: typeof enTranslations }) {
   const [themeMode, setThemeMode] = useState<"system" | "light" | "dark">("system");
 
   // Get system theme detection function
@@ -1117,7 +1124,7 @@ function CallToAction() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Subscribe to Bitcoin Brief
+            {t.subscribeToBitcoinBrief}
           </a>
         </Button>
 
@@ -1126,21 +1133,21 @@ function CallToAction() {
           <button
             onClick={() => handleThemeChange("light")}
             className={`rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800 ${themeMode === "light" ? "bg-gray-200 dark:bg-gray-700" : ""}`}
-            title="Light Mode"
+            title={t.lightMode}
           >
             <Sun className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleThemeChange("system")}
             className={`rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800 ${themeMode === "system" ? "bg-gray-200 dark:bg-gray-700" : ""}`}
-            title="System Default"
+            title={t.systemDefault}
           >
             <Monitor className="h-4 w-4" />
           </button>
           <button
             onClick={() => handleThemeChange("dark")}
             className={`rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800 ${themeMode === "dark" ? "bg-gray-200 dark:bg-gray-700" : ""}`}
-            title="Dark Mode"
+            title={t.darkMode}
           >
             <Moon className="h-4 w-4" />
           </button>
@@ -1159,6 +1166,7 @@ function Footer({
   isSiteEnabled: boolean | null;
   onToggle: () => void;
   hostname: string;
+  t: typeof enTranslations;
 }) {
   return (
     <footer className="flex items-center justify-between text-left text-xs text-gray-400 dark:text-gray-500">
@@ -1169,7 +1177,7 @@ function Footer({
               <Switch id="extension-enabled" checked={isSiteEnabled} onCheckedChange={onToggle} />
             )}
             <label htmlFor="extension-enabled" className="cursor-pointer text-xs">
-              {isSiteEnabled ? "Enabled" : "Disabled"} on this site
+              {isSiteEnabled ? t.enabledOnThisSite : t.disabledOnThisSite}
             </label>
           </>
         )}
@@ -1182,7 +1190,7 @@ function Footer({
             rel="noopener noreferrer"
             className="hover:underline"
           >
-            Privacy
+            {t.privacy}
           </a>{" "}
           &middot;{" "}
           <a
@@ -1191,7 +1199,7 @@ function Footer({
             rel="noopener noreferrer"
             className="hover:underline"
           >
-            Feedback
+            {t.feedback}
           </a>
         </span>
       </div>
@@ -1349,13 +1357,14 @@ export function IndexPage() {
 
   return (
     <div className="min-h-screen w-80 bg-white p-4 font-sans dark:bg-gray-900 dark:text-white">
-      <Header />
-      <LivePrice />
-      <Converter />
-      <CallToAction />
-      <Footer isSiteEnabled={isSiteEnabled} onToggle={toggleCurrentSite} hostname={hostname} />
+      <Header t={t} />
+      <LivePrice t={t} />
+      <Converter t={t} />
+      <CallToAction t={t} />
+      <Footer isSiteEnabled={isSiteEnabled} onToggle={toggleCurrentSite} hostname={hostname} t={t} />
       <SaylorModeOverlay
         isActive={showSaylorAnimation}
+        t={t}
         onComplete={() => {
           setShowSaylorAnimation(false);
           // Dispatch event to reopen settings dropdown
