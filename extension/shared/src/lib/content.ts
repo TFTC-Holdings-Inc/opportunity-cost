@@ -336,6 +336,64 @@ async function main() {
     currencySymbols = supportedCurrencies.map((c) => c.symbol);
     currencyRegex = new RegExp(`[${currencySymbols.map((s) => `\\${s}`).join("")}]`, "g");
 
+    // Build a map of unique symbols to currencies (for symbols that appear only once)
+    const symbolToCurrency = new Map<string, typeof supportedCurrencies[0]>();
+    const symbolCount = new Map<string, number>();
+    for (const c of supportedCurrencies) {
+      symbolCount.set(c.symbol, (symbolCount.get(c.symbol) || 0) + 1);
+    }
+    for (const c of supportedCurrencies) {
+      // Only map unique symbols directly
+      if (symbolCount.get(c.symbol) === 1) {
+        symbolToCurrency.set(c.symbol, c);
+      }
+    }
+
+    // Build a map of ISO codes to currencies
+    const isoToCurrency = new Map<string, typeof supportedCurrencies[0]>();
+    for (const c of supportedCurrencies) {
+      isoToCurrency.set(c.value.toUpperCase(), c);
+    }
+
+    /**
+     * Detects which currency a matched price string belongs to.
+     * Priority: ISO code > unique symbol > default currency
+     */
+    function detectCurrency(matchedText: string): typeof supportedCurrencies[0] | null {
+      const upperText = matchedText.toUpperCase();
+
+      // First, check for explicit ISO codes
+      for (const [iso, currency] of isoToCurrency) {
+        // Match ISO code as a word boundary (e.g., "100 USD" or "USD 100")
+        const isoRegex = new RegExp(`\\b${iso}\\b`);
+        if (isoRegex.test(upperText)) {
+          return currency;
+        }
+      }
+
+      // Second, check for unique currency symbols
+      for (const [symbol, currency] of symbolToCurrency) {
+        if (matchedText.includes(symbol)) {
+          return currency;
+        }
+      }
+
+      // Third, check for any currency symbol and use default if ambiguous
+      for (const c of supportedCurrencies) {
+        if (matchedText.includes(c.symbol)) {
+          // Ambiguous symbol - use default currency if it has the same symbol
+          const defaultCurrency = supportedCurrencies.find((curr) => curr.value === userPreferences.defaultCurrency);
+          if (defaultCurrency && defaultCurrency.symbol === c.symbol) {
+            return defaultCurrency;
+          }
+          // Otherwise return the first matching currency
+          return c;
+        }
+      }
+
+      return null;
+    }
+
     if (!btcPrices || Object.keys(btcPrices).length === 0 || !supportedCurrencies || supportedCurrencies.length === 0) {
       console.warn("Opportunity Cost: Failed to get BTC prices or supported currencies. Prices will not be converted.");
       return;
@@ -411,7 +469,18 @@ async function main() {
       }
     }
 
-    // Replaces fiat prices in text nodes with their bitcoin equivalent, for the default currency only
+    // Build a regex that matches ANY supported currency symbol or ISO code
+    const allSymbols = [...new Set(supportedCurrencies.map((c) => escapeRegex(c.symbol)))].join("|");
+    const allIsoCodes = supportedCurrencies.map((c) => c.value.toUpperCase()).join("|");
+    const magnitude = "(?:thousand|million|billion|trillion|quadrillion|k|m|b|t|q|bn|mn|tn)";
+    const number = "\\d[\\d.,]*";
+    // Matches: $100, €50, 100 USD, 50 EUR, etc.
+    const universalPriceRegex = new RegExp(
+      `(?:(?:${allSymbols})\\s?${number}(?:\\s*${magnitude})?|${number}(?:\\s*${magnitude})?\\s?(?:${allSymbols}|${allIsoCodes}))\\b`,
+      "gi",
+    );
+
+    // Replaces fiat prices in text nodes with their bitcoin equivalent, for any supported currency
     const replacePrice = (textNode: Text): void => {
       const content = textNode.textContent || "";
       const parent = textNode.parentNode;
@@ -426,43 +495,40 @@ async function main() {
         ancestor = ancestor.parentElement;
       }
 
-      const defaultCurrency = userPreferences.defaultCurrency;
-      const currency = supportedCurrencies.find((c) => c.value === defaultCurrency);
-      if (!currency || !currency.symbol) return;
-      const currencySymbol = currency.symbol;
-      const iso = currency.value.toUpperCase();
-      const sym = escapeRegex(currencySymbol);
-      const magnitude = "(?:thousand|million|billion|trillion|quadrillion|k|m|b|t|q|bn|mn|tn)";
-      const number = "\\d[\\d.,]*";
-      const regex = new RegExp(
-        `(?:${sym}\\s?${number}(?:\\s*${magnitude})?|${number}(?:\\s*${magnitude})?\\s?(?:${sym}|${iso}))\\b`,
-        "gi",
-      );
-      regex.lastIndex = 0;
+      universalPriceRegex.lastIndex = 0;
       let match;
       let lastIndex = 0;
       let modified = false;
       const frag = document.createDocumentFragment();
 
-      while ((match = regex.exec(content)) !== null) {
+      while ((match = universalPriceRegex.exec(content)) !== null) {
         const matchStart = match.index;
         if (matchStart > lastIndex) {
           frag.appendChild(document.createTextNode(content.slice(lastIndex, matchStart)));
         }
 
         const fullMatch = match[0];
+
+        // Detect which currency this match belongs to
+        const currency = detectCurrency(fullMatch);
+        if (!currency) {
+          frag.appendChild(document.createTextNode(fullMatch));
+          lastIndex = universalPriceRegex.lastIndex;
+          continue;
+        }
+
         const trailingWS = fullMatch.match(/\s+$/)?.[0] ?? "";
         const fiatText = trailingWS ? fullMatch.slice(0, -trailingWS.length) : fullMatch;
-        const fiatValue = convertCurrencyValue(fullMatch, currencySymbol, currency.value);
+        const fiatValue = convertCurrencyValue(fullMatch, currency.symbol, currency.value);
         if (isNaN(fiatValue)) {
           frag.appendChild(document.createTextNode(fullMatch));
-          lastIndex = regex.lastIndex;
+          lastIndex = universalPriceRegex.lastIndex;
           continue;
         }
         const btcPrice = btcPrices[currency.value];
         if (!btcPrice) {
           frag.appendChild(document.createTextNode(fullMatch));
-          lastIndex = regex.lastIndex;
+          lastIndex = universalPriceRegex.lastIndex;
           continue;
         }
 
@@ -473,7 +539,7 @@ async function main() {
         // Check if Saylor Mode is enabled
         if (userPreferences.saylorMode) {
           // In Saylor Mode, display the future fiat value
-          bitcoinValueSpan.textContent = formatSaylorModeValue(fiatValue, currencySymbol);
+          bitcoinValueSpan.textContent = formatSaylorModeValue(fiatValue, currency.symbol);
         } else {
           // Normal mode - display Bitcoin value
           bitcoinValueSpan.textContent = formatBitcoinValue(satsValue);
@@ -492,7 +558,7 @@ async function main() {
           frag.appendChild(document.createTextNode(trailingWS));
         }
 
-        lastIndex = regex.lastIndex;
+        lastIndex = universalPriceRegex.lastIndex;
         modified = true;
       }
 
@@ -518,12 +584,13 @@ async function main() {
         if (vis.closest('[data-opp-cost-disabled="true"]')) return;
         const parent = vis.closest(".a-price");
         if (!parent) return;
-        const currency = supportedCurrencies.find((c) => c.value === userPreferences.defaultCurrency);
+        // Detect currency from the price text
+        const currency = detectCurrency(vis.textContent);
         if (!currency) return;
-        if (!vis.textContent!.includes(currency.symbol)) return;
         const btcPrice = btcPrices[currency.value];
         if (!btcPrice) return;
         const fiatValue = convertCurrencyValue(vis.textContent, currency.symbol, currency.value);
+        if (isNaN(fiatValue)) return;
         const sats = Math.round((fiatValue / btcPrice) * SATS_IN_BTC);
 
         let btcDisplay: string;
@@ -582,7 +649,8 @@ async function main() {
         // Skip elements that are children of elements with data-opp-cost-disabled="true"
         if (amount.closest('[data-opp-cost-disabled="true"]')) return;
 
-        const currency = supportedCurrencies.find((c) => c.value === userPreferences.defaultCurrency);
+        // Detect currency from the price text
+        const currency = detectCurrency(amount.textContent ?? "");
         if (!currency) return;
 
         const btcPrice = btcPrices[currency.value];
@@ -624,12 +692,6 @@ async function main() {
      * Works for both dual-display and bitcoin-only modes.
      */
     function processCompositePriceElements(): void {
-      const currency = supportedCurrencies.find((c) => c.value === userPreferences.defaultCurrency);
-      if (!currency) return;
-
-      const btcPrice = btcPrices[currency.value];
-      if (!btcPrice) return;
-
       // Target common containers that hide duplicated/visual prices (e.g., Amazon, generic price widgets)
       const selector = "span[aria-hidden='true']:not([data-oc-processed])";
       document.querySelectorAll<HTMLElement>(selector).forEach((container) => {
@@ -637,7 +699,13 @@ async function main() {
         // Skip elements that are children of elements with data-opp-cost-disabled="true"
         if (container.closest('[data-opp-cost-disabled="true"]')) return;
         if (!container.textContent) return;
-        if (!container.textContent.includes(currency.symbol)) return;
+
+        // Detect currency from the price text
+        const currency = detectCurrency(container.textContent);
+        if (!currency) return;
+
+        const btcPrice = btcPrices[currency.value];
+        if (!btcPrice) return;
 
         const fiatValue = convertCurrencyValue(container.textContent, currency.symbol, currency.value);
         if (isNaN(fiatValue)) return;
