@@ -44,10 +44,14 @@ This document provides a complete inventory of all files included in this source
 **React Components (`src/components/`):**
 - `index-page.tsx` - Main popup interface component
 - `options-page.tsx` - Extension options interface component
+- `saylor-mode-overlay.tsx` - Saylor Mode overlay component
 
 **UI Components (`src/components/ui/`):**
 - `button.tsx` - Reusable button component
+- `command.tsx` - Command palette component
+- `dialog.tsx` - Dialog component
 - `dropdown-menu.tsx` - Dropdown menu component
+- `popover.tsx` - Popover component
 - `switch.tsx` - Toggle switch component
 - `tooltip.tsx` - Tooltip component
 
@@ -55,6 +59,8 @@ This document provides a complete inventory of all files included in this source
 - `logo.svg` - Extension logo in SVG format
 
 ### Public Assets (`public/`)
+- `saylor.jpg` - Saylor Mode overlay image
+
 **Extension Icons (`public/icons/`):**
 - `logo.png` - Main extension icon (41KB)
 - `logo.svg` - Vector version of logo (1KB)
