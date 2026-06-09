@@ -1,5 +1,5 @@
-export const APP_URL = "https://www.opportunitycost.app";
-export const API_BASE = "https://www.opportunitycost.app/api/bitcoin-price";
+export const APP_URL = "https://www.opportunitycost.xyz";
+export const API_BASE = "https://www.opportunitycost.xyz/api/bitcoin-price";
 
 export const DEFAULT_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
 export const CACHE_DURATION = 5 * 60 * 1000; // 5 minute cache duration for aggressive caching

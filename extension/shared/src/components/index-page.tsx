@@ -1177,7 +1177,7 @@ function Footer({
       <div className="flex flex-col">
         <span>
           <a
-            href="https://www.opportunitycost.app/privacy-policy?utm_source=opportunity-cost-extension"
+            href="https://www.opportunitycost.xyz/privacy-policy?utm_source=opportunity-cost-extension"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:underline"

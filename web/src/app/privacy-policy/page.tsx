@@ -113,8 +113,8 @@ export default function PrivacyPolicyPage() {
             please contact us:
           </p>
           <ul className="list-disc ml-6 mt-2 mb-2">
-            <li>Email: contact@opportunitycost.app</li>
-            <li>Website: https://opportunitycost.app</li>
+            <li>Email: contact@opportunitycost.xyz</li>
+            <li>Website: https://opportunitycost.xyz</li>
           </ul>
         </section>
       </main>

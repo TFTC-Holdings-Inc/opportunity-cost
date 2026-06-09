@@ -48,7 +48,7 @@ async function getBitcoinPrice(): Promise<{
   growthFactor: number;
 }> {
   try {
-    const baseUrl = "https://opportunitycost.app";
+    const baseUrl = "https://opportunitycost.xyz";
 
     const response = await fetch(`${baseUrl}/api/bitcoin-price`, {
       next: { revalidate: 300 }, // 5 minutes

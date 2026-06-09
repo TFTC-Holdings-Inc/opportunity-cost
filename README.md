@@ -46,7 +46,7 @@ Opportunity Cost is a browser extension that instantly converts fiat currency pr
 
 #### Chrome
 
-1. Download the latest release from our [website](https://www.opportunitycost.app/install)
+1. Download the latest release from our [website](https://www.opportunitycost.xyz/install)
 2. Extract the ZIP file to a location on your computer
 3. Open Chrome and navigate to `chrome://extensions/`
 4. Enable "Developer mode" in the top-right corner
@@ -55,7 +55,7 @@ Opportunity Cost is a browser extension that instantly converts fiat currency pr
 
 #### Firefox
 
-1. Download the latest release from our [website](https://www.opportunitycost.app/install)
+1. Download the latest release from our [website](https://www.opportunitycost.xyz/install)
 2. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
 3. Click "Load Temporary Add-on" and select any file in the extracted directory
 4. The extension will be loaded for the current session
@@ -131,7 +131,7 @@ Opportunity Cost respects your privacy:
 - We only fetch current Bitcoin prices from our API
 - No personal information is collected or stored
 
-View our [complete privacy policy](https://www.opportunitycost.app/privacy-policy).
+View our [complete privacy policy](https://www.opportunitycost.xyz/privacy-policy).
 
 ## Contributing
 
@@ -143,7 +143,7 @@ Opportunity Cost Browser Extension is licensed under the [MIT license](LICENSE).
 
 ## Links
 
-- [Official Website](https://www.opportunitycost.app)
+- [Official Website](https://www.opportunitycost.xyz)
 - [TFTC](https://tftc.io)
 - [Bitcoin Brief Newsletter](https://tftc.io/bitcoin-brief)
 - [Feedback](https://opportunitycost.userjot.com)

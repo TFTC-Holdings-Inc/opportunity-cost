@@ -5,6 +5,12 @@ All notable changes to the Opportunity Cost extension will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.8] - 2026-06-09
+
+### Changed
+
+- Updated all domain references from opportunitycost.app to opportunitycost.xyz (price API, website links, privacy policy links) after losing the old domain
+
 ## [0.0.5] - 2025-06-16
 
 ### Removed

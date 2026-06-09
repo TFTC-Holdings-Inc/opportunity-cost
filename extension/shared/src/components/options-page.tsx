@@ -387,7 +387,7 @@ export function OptionsPage() {
         <p>
           &copy; 2025 Opportunity Cost &middot;{" "}
           <a
-            href="https://www.opportunitycost.app/privacy-policy"
+            href="https://www.opportunitycost.xyz/privacy-policy"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:underline"
