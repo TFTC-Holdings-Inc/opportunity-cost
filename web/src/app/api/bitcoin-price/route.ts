@@ -31,6 +31,7 @@ const SUPPORTED_CURRENCIES = [
   "czk", // Czech Koruna
   "sek", // Swedish Krona
   "nok", // Norwegian Krone
+  "myr", // Malaysian Ringgit
 ] as const;
 
 type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];

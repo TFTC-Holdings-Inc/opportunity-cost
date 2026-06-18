@@ -38,6 +38,7 @@ export const SUPPORTED_CURRENCIES = [
   { name: "Swiss Franc", value: "chf", symbol: "₣" },
   { name: "Turkish Lira", value: "try", symbol: "₺" },
   { name: "Vietnamese Dong", value: "vnd", symbol: "₫" },
+  { name: "Malaysian Ringgit", value: "myr", symbol: "RM" },
 ];
 
 export const DEFAULT_CURRENCY = "usd";
