@@ -89,8 +89,8 @@ After installation, the extension automatically works on all websites:
 
 ### Prerequisites
 
-- Node.js (v16+)
-- npm or yarn
+- Node.js 22.12 or newer
+- npm 11.8
 
 ### Setup
 
@@ -101,16 +101,17 @@ After installation, the extension automatically works on all websites:
    cd opportunity-cost
    ```
 
-2. Install dependencies:
+2. Install the website and extension dependencies from their authoritative npm lockfiles:
 
    ```bash
-   npm install
+   npm ci --prefix web
+   npm ci --prefix extension/shared
    ```
 
 3. Build the extension:
 
    ```bash
-   npm run build
+   npm run build --prefix extension/shared
    ```
 
 4. Load the extension in developer mode:

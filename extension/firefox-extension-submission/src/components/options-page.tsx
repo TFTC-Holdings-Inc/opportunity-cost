@@ -21,6 +21,7 @@ export function OptionsPage() {
   const [themeMode, setThemeMode] = useState<ThemeMode>("system");
   const [darkMode, setDarkMode] = useState(false);
   const [saveMessage, setSaveMessage] = useState(false);
+  const [clearMessage, setClearMessage] = useState<string | null>(null);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
@@ -182,6 +183,30 @@ export function OptionsPage() {
       alert("Failed to update disabled sites. Please try again.");
       // Revert UI change on failure
       setDisabledSites(originalSites);
+    }
+  };
+
+  const handleClearAllData = async () => {
+    if (!window.confirm("Reset all settings, disabled sites, and cached Bitcoin prices?")) {
+      return;
+    }
+
+    setClearMessage(null);
+    try {
+      await PriceDatabase.clearAllData();
+      const preferences = await PriceDatabase.getPreferences();
+      setDefaultCurrency(preferences.defaultCurrency || DEFAULT_CURRENCY);
+      setDisplayMode(preferences.displayMode || "dual-display");
+      setDenomination(preferences.denomination || "dynamic");
+      sethighlightBitcoinValue(preferences.highlightBitcoinValue === true);
+      setSaylorMode(preferences.saylorMode || false);
+      setDisabledSites(preferences.disabledSites || []);
+      setThemeMode(preferences.themeMode || "system");
+      applyTheme(preferences.themeMode || "system");
+      await browser.runtime.sendMessage({ action: "preferencesUpdated" });
+      setClearMessage("Local data cleared. Default settings were restored.");
+    } catch {
+      setClearMessage("Local data could not be cleared. Please try again.");
     }
   };
 
@@ -362,6 +387,19 @@ export function OptionsPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Local Data */}
+        <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
+          <h2 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">Local Data</h2>
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+            Opportunity Cost stores your settings, disabled-site hostnames, and one cached Bitcoin price snapshot on
+            this device. It does not keep conversion history or page contents.
+          </p>
+          <Button type="button" variant="secondary" onClick={handleClearAllData}>
+            Clear All Data
+          </Button>
+          {clearMessage && <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">{clearMessage}</p>}
         </div>
 
         {/* Newsletter */}

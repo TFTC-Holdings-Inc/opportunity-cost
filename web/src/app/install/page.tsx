@@ -25,7 +25,7 @@ export default function InstallPage() {
               Download the Extension
             </h2>
             <p className="mb-4">
-              Click the button below to download the Opportunity Cost extension:
+              Download the reviewed Chrome package, version 0.0.9:
             </p>
             <Link
               href="/extension/oc-extension.zip"
@@ -48,6 +48,17 @@ export default function InstallPage() {
               </svg>
               Download Extension
             </Link>
+            <p className="mt-4 text-sm text-gray-600">
+              Verify the package using its{" "}
+              <Link
+                href="/extension/oc-extension.zip.sha256"
+                className="text-[var(--primary)] underline"
+                download
+              >
+                SHA-256 checksum
+              </Link>
+              . Release metadata records the source commit used to build it.
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">

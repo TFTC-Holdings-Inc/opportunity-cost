@@ -1,11 +1,9 @@
 export const APP_URL = "https://www.opportunitycost.xyz";
 export const API_BASE = "https://www.opportunitycost.xyz/api/bitcoin-price";
 
-export const DEFAULT_REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
-export const CACHE_DURATION = 5 * 60 * 1000; // 5 minute cache duration for aggressive caching
-export const INITIAL_BACKOFF = 2000; // Initial backoff duration in ms (2 seconds)
-export const MAX_BACKOFF = 5 * 60 * 1000; // Maximum backoff duration (5 minutes)
-export const MAX_RETRIES = 5; // Maximum number of retry attempts
+export const CACHE_DURATION = 5 * 60 * 1000;
+export const MAX_STALE_CACHE_DURATION = 60 * 60 * 1000;
+export const API_TIMEOUT = 8_000;
 
 export const SUPPORTED_CURRENCIES = [
   { name: "US Dollar", value: "usd", symbol: "$" },
@@ -38,7 +36,7 @@ export const SUPPORTED_CURRENCIES = [
   { name: "Swiss Franc", value: "chf", symbol: "₣" },
   { name: "Turkish Lira", value: "try", symbol: "₺" },
   { name: "Vietnamese Dong", value: "vnd", symbol: "₫" },
-];
+] as const;
 
 export const DEFAULT_CURRENCY = "usd";
 
