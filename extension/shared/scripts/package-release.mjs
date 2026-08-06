@@ -23,6 +23,10 @@ if (JSON.stringify(manifest.permissions) !== JSON.stringify(["activeTab"])) {
 if (JSON.stringify(manifest.host_permissions) !== JSON.stringify(["https://www.opportunitycost.xyz/*"])) {
   throw new Error("Chrome release is missing the exact Bitcoin price API host permission");
 }
+const expectedIcons = { 16: "icons/icon16.png", 48: "icons/icon48.png", 128: "icons/icon128.png" };
+if (JSON.stringify(manifest.icons) !== JSON.stringify(expectedIcons)) {
+  throw new Error("Chrome release manifest must use correctly sized store icons");
+}
 
 const releaseRecord = {
   name: packageJson.name,

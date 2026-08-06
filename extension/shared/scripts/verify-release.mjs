@@ -39,6 +39,10 @@ if (JSON.stringify(manifest.permissions) !== JSON.stringify(["activeTab"])) {
 if (JSON.stringify(manifest.host_permissions) !== JSON.stringify(["https://www.opportunitycost.xyz/*"])) {
   throw new Error("Published extension has unexpected host permissions");
 }
+const expectedIcons = { 16: "icons/icon16.png", 48: "icons/icon48.png", 128: "icons/icon128.png" };
+if (JSON.stringify(manifest.icons) !== JSON.stringify(expectedIcons)) {
+  throw new Error("Published extension has invalid store icon paths");
+}
 
 const strings = execFileSync("unzip", ["-p", artifactPath], {
   encoding: "utf8",
@@ -57,6 +61,12 @@ const firefoxManifest = JSON.parse(
 );
 if (firefoxManifest.version !== release.version) {
   throw new Error("Firefox source archive version does not match the published Chrome release");
+}
+if (
+  JSON.stringify(firefoxManifest.browser_specific_settings?.gecko?.data_collection_permissions) !==
+  JSON.stringify({ required: ["none"] })
+) {
+  throw new Error("Firefox source archive is missing its no-data-collection declaration");
 }
 const firefoxConstants = execFileSync(
   "unzip",

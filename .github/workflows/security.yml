@@ -67,6 +67,7 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
+      - run: npm run package:firefox
       - run: npm run verify:release
 
   firefox-source-submission:

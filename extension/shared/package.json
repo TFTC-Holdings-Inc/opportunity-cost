@@ -12,7 +12,7 @@
     "build:chrome": "tsc -b && vite build --mode chrome && vite build --mode chrome --config vite.content.config.ts",
     "build:firefox": "tsc -b && vite build --mode firefox && vite build --mode firefox --config vite.content.config.ts && vite build --mode firefox --config vite.background.config.ts",
     "package:chrome": "npm run build:chrome && node scripts/package-release.mjs",
-    "package:firefox": "npm run build:firefox && cd dist/firefox && zip -r ../oc-firefox.zip .",
+    "package:firefox": "npm run build:firefox && node scripts/package-firefox.mjs",
     "package:firefox-source": "node scripts/package-firefox-source.mjs",
     "package": "npm run package:chrome && npm run package:firefox",
     "verify:release": "node scripts/verify-release.mjs",
