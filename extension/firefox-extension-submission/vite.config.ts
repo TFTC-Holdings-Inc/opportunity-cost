@@ -10,12 +10,12 @@ export default defineConfig(({ mode }) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const input: any = {
-    main: path.resolve(__dirname, "index.html"),
-    options: path.resolve(__dirname, "options.html"),
+    main: path.resolve(import.meta.dirname, "index.html"),
+    options: path.resolve(import.meta.dirname, "options.html"),
   };
 
   if (!isFirefox) {
-    input.background = path.resolve(__dirname, "src/lib/background.ts");
+    input.background = path.resolve(import.meta.dirname, "src/lib/background.ts");
   }
 
   return {
@@ -27,20 +27,18 @@ export default defineConfig(({ mode }) => {
           {
             src: "manifest.json",
             dest: ".",
-          },
-          {
-            src: "public/icons",
-            dest: ".",
+            rename: { stripBase: true },
           },
         ],
       }),
     ],
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "./src"),
+        "@": path.resolve(import.meta.dirname, "./src"),
       },
     },
     build: {
+      emptyOutDir: process.env.WATCH ? false : true,
       outDir: `dist/${browser}`,
       rollupOptions: {
         input,

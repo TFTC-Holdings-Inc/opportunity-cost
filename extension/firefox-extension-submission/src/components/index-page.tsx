@@ -60,7 +60,7 @@ function Header() {
 
   return (
     <header className="mb-4 flex items-center gap-x-0.5">
-      <a href={APP_URL} target="_blank" className="mr-auto flex items-center">
+      <a href={APP_URL} target="_blank" rel="noopener noreferrer" className="mr-auto flex items-center">
         <img src="icons/logo.svg" alt="TFTC Logo" className="mr-2 h-8" />
         <span className="text-foreground text-lg font-bold dark:text-white">Opportunity Cost</span>
       </a>
@@ -974,7 +974,7 @@ function Settings() {
             asChild
             className="pl-2.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
           >
-            <a className="flex items-center" href={`${APP_URL}/saylor-mode`} target="_blank">
+            <a className="flex items-center" href={`${APP_URL}/saylor-mode`} target="_blank" rel="noopener noreferrer">
               <Info className="mr-1 size-3" />
               What is Saylor Mode?
             </a>
@@ -1317,22 +1317,15 @@ export function IndexPage() {
     const loadPreferencesAndTab = async () => {
       // Get current tab info
       const response = await browser.runtime.sendMessage({ action: "getCurrentTab" });
-      if (response?.tab?.url) {
-        try {
-          const url = new URL(response.tab.url);
-          const currentHostname = url.hostname;
-          setHostname(currentHostname);
+      if (response?.hostname) {
+        const currentHostname = response.hostname;
+        setHostname(currentHostname);
 
-          // Load preferences to check if this site is disabled
-          PriceDatabase.getPreferences().then((prefs) => {
-            const disabledSites = prefs.disabledSites || [];
-            setIsSiteEnabled(!disabledSites.includes(currentHostname));
-          });
-        } catch (error) {
-          // Invalid URL, maybe about:blank or something similar
-          console.error("Error parsing URL for site toggle:", error);
-          setHostname("");
-        }
+        // Load preferences to check if this site is disabled
+        PriceDatabase.getPreferences().then((prefs) => {
+          const disabledSites = prefs.disabledSites || [];
+          setIsSiteEnabled(!disabledSites.includes(currentHostname));
+        });
       } else {
         setHostname("");
       }

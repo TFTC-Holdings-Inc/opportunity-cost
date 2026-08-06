@@ -1,85 +1,109 @@
 import { NextResponse } from "next/server";
-
-const SUPPORTED_CURRENCIES = [
-  "usd", // US Dollar
-  "eur", // Euro
-  "gbp", // British Pound
-  "jpy", // Japanese Yen
-  "cny", // Chinese Yuan
-  "inr", // Indian Rupee
-  "cad", // Canadian Dollar
-  "aud", // Australian Dollar
-  "chf", // Swiss Franc
-  "sgd", // Singapore Dollar
-  "mxn", // Mexican Peso
-  "ars", // Argentine Peso
-  "php", // Philippine Peso
-  "vnd", // Vietnamese Dong
-  "idr", // Indonesian Rupiah
-  "brl", // Brazilian Real
-  "clp", // Chilean Peso
-  "zar", // South African Rand
-  "rub", // Russian Ruble
-  "krw", // South Korean Won
-  "hkd", // Hong Kong Dollar
-  "twd", // New Taiwan Dollar
-  "huf", // Hungarian Forint
-  "dkk", // Danish Krone
-  "nzd", // New Zealand Dollar
-  "try", // Turkish Lira
-  "pln", // Polish Złoty
-  "czk", // Czech Koruna
-  "sek", // Swedish Krona
-  "nok", // Norwegian Krone
-] as const;
-
-type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
-
-type CoinGeckoResponse = {
-  bitcoin: {
-    [K in SupportedCurrency]: number;
-  };
-};
+import {
+  isPlausiblePriceChange,
+  parseCoinGeckoResponse,
+  SUPPORTED_CURRENCIES,
+  type BitcoinPriceResponse,
+} from "@/lib/bitcoin-price";
 
 type ErrorResponse = {
   error: string;
 };
 
-type ApiResponse = CoinGeckoResponse | ErrorResponse;
+const CACHE_DURATION = 5 * 60 * 1000;
+const MAX_STALE_DURATION = 60 * 60 * 1000;
+const UPSTREAM_TIMEOUT = 8_000;
 
-export const dynamic = "force-static";
-export const revalidate = 300; // 5 minutes
+let lastKnownGood: { data: BitcoinPriceResponse; timestamp: number } | null =
+  null;
 
-let cache: { data: CoinGeckoResponse; timestamp: number } | null = null;
-const CACHE_DURATION = 300_000; // 5 minutes in ms
+export const dynamic = "force-dynamic";
 
-export async function GET(): Promise<NextResponse<ApiResponse>> {
-  const now = Date.now();
-
-  if (cache && now - cache.timestamp < CACHE_DURATION) {
-    return NextResponse.json(cache.data);
+function priceResponse(
+  data: BitcoinPriceResponse,
+  cacheStatus: "fresh" | "hit" | "stale",
+): NextResponse<BitcoinPriceResponse> {
+  const headers = new Headers({
+    "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+    "X-Content-Type-Options": "nosniff",
+    "X-Price-Cache": cacheStatus,
+  });
+  if (cacheStatus === "stale") {
+    headers.set("Warning", '110 - "Response is stale"');
   }
+
+  return NextResponse.json(data, { headers });
+}
+
+function staleResponse(now: number): NextResponse<BitcoinPriceResponse> | null {
+  if (lastKnownGood && now - lastKnownGood.timestamp < MAX_STALE_DURATION) {
+    return priceResponse(lastKnownGood.data, "stale");
+  }
+  return null;
+}
+
+export async function GET(): Promise<
+  NextResponse<BitcoinPriceResponse | ErrorResponse>
+> {
+  const now = Date.now();
+  if (lastKnownGood && now - lastKnownGood.timestamp < CACHE_DURATION) {
+    return priceResponse(lastKnownGood.data, "hit");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT);
 
   try {
     const currencies = SUPPORTED_CURRENCIES.join(",");
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currencies}`;
-    const res = await fetch(url);
+    const apiUrl =
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=" +
+      currencies;
+    const response = await fetch(apiUrl, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch from CoinGecko" } as ErrorResponse,
-        { status: 502 }
+    if (!response.ok) {
+      return (
+        staleResponse(now) ??
+        NextResponse.json(
+          { error: "Bitcoin price provider is unavailable" },
+          { status: 502 },
+        )
       );
     }
 
-    const data = (await res.json()) as CoinGeckoResponse;
-    cache = { data: { bitcoin: data.bitcoin }, timestamp: now };
+    const data = parseCoinGeckoResponse(await response.json());
+    if (!data) {
+      return (
+        staleResponse(now) ??
+        NextResponse.json(
+          { error: "Bitcoin price provider returned invalid data" },
+          { status: 502 },
+        )
+      );
+    }
 
-    return NextResponse.json(cache.data);
+    if (
+      lastKnownGood &&
+      now - lastKnownGood.timestamp < MAX_STALE_DURATION &&
+      !isPlausiblePriceChange(lastKnownGood.data, data)
+    ) {
+      return priceResponse(lastKnownGood.data, "stale");
+    }
+
+    lastKnownGood = { data, timestamp: now };
+    return priceResponse(data, "fresh");
   } catch {
-    return NextResponse.json(
-      { error: "Error fetching Bitcoin price" } as ErrorResponse,
-      { status: 500 }
+    return (
+      staleResponse(now) ??
+      NextResponse.json(
+        { error: "Bitcoin price provider request failed" },
+        { status: 502 },
+      )
     );
+  } finally {
+    clearTimeout(timeout);
   }
 }

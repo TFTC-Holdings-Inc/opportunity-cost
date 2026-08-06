@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      website-dependencies:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /extension/shared
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      extension-dependencies:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /extension/firefox-extension-submission
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      firefox-source-dependencies:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3

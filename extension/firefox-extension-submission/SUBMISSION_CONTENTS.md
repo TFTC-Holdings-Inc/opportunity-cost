@@ -3,13 +3,15 @@
 This document provides a complete inventory of all files included in this source code submission for the Opportunity Cost Firefox extension.
 
 ## Total Package Size
-- **Clean source code**: 4.8MB (excluding node_modules and build artifacts)
+
+- **Clean source code**: approximately 4.8MB (excluding node_modules and build artifacts)
 - **With dependencies installed**: ~65MB
 - **Built extension size**: ~500KB
 
 ## Directory Structure
 
 ### Root Configuration Files
+
 - `package.json` - Dependencies and build scripts
 - `package-lock.json` - Exact dependency versions for reproducible builds
 - `manifest.json` - Firefox extension manifest (Manifest V2)
@@ -28,13 +30,16 @@ This document provides a complete inventory of all files included in this source
 - `options.html` - Options page template
 
 ### Source Code (`src/`)
+
 **Core Application Logic:**
+
 - `index.tsx` - Popup interface entry point
 - `options.tsx` - Options page entry point
 - `index.css` - Main stylesheet with Tailwind CSS
 - `vite-env.d.ts` - Vite type definitions
 
 **Background & Content Scripts (`src/lib/`):**
+
 - `background.ts` - Extension background script (price fetching, storage)
 - `content.ts` - Content script (price detection and replacement)
 - `storage.ts` - IndexedDB storage utilities
@@ -42,11 +47,13 @@ This document provides a complete inventory of all files included in this source
 - `utils.ts` - Utility functions
 
 **React Components (`src/components/`):**
+
 - `index-page.tsx` - Main popup interface component
 - `options-page.tsx` - Extension options interface component
 - `saylor-mode-overlay.tsx` - Saylor Mode overlay component
 
 **UI Components (`src/components/ui/`):**
+
 - `button.tsx` - Reusable button component
 - `command.tsx` - Command palette component
 - `dialog.tsx` - Dialog component
@@ -56,12 +63,15 @@ This document provides a complete inventory of all files included in this source
 - `tooltip.tsx` - Tooltip component
 
 **Assets (`src/assets/`):**
+
 - `logo.svg` - Extension logo in SVG format
 
 ### Public Assets (`public/`)
+
 - `saylor.jpg` - Saylor Mode overlay image
 
 **Extension Icons (`public/icons/`):**
+
 - `logo.png` - Main extension icon (41KB)
 - `logo.svg` - Vector version of logo (1KB)
 - `old/` - Legacy icon versions for reference
@@ -69,6 +79,7 @@ This document provides a complete inventory of all files included in this source
 ## File Types Included
 
 ### Source Code Files (Unminified)
+
 - **TypeScript**: `.ts`, `.tsx` files containing all application logic
 - **React**: `.tsx` files for UI components
 - **CSS**: `.css` files with original styling
@@ -76,11 +87,13 @@ This document provides a complete inventory of all files included in this source
 - **SVG**: Vector graphics in source format
 
 ### Configuration Files
+
 - **Build Configuration**: Vite, TypeScript, ESLint configs
 - **Package Management**: package.json with exact dependencies
 - **Extension Manifest**: Firefox-specific manifest.json
 
 ### Static Assets
+
 - **Icons**: PNG and SVG format icons
 - **License**: MIT license file
 
@@ -92,13 +105,14 @@ This document provides a complete inventory of all files included in this source
 ✅ **Clear instructions** - Comprehensive README with step-by-step build guide
 ✅ **Size requirements met** - Under 200MB limit (4.8MB clean)
 ✅ **Browser compatibility** - Firefox Manifest V2 format
-✅ **No binary files** - All files are text-based and reviewable
+✅ **Reviewable source** - Application and build logic are provided as readable source; image assets are included
 
 ## Build Verification
 
 The extension can be built with these commands:
+
 ```bash
-npm install           # Install dependencies
+npm ci                # Install exact dependencies from package-lock.json
 npm run build:firefox # Build Firefox extension
 ```
 

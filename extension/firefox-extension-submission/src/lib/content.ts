@@ -3,7 +3,7 @@
  *
  * Scans the DOM for fiat currency prices and converts them to their Bitcoin (satoshi) equivalent.
  * Integrates with the background script for real-time price data and user preferences.
- * Handles dynamic content and tracks conversion statistics for analytics.
+ * Handles dynamic content without transmitting page text, URLs, or conversion data.
  */
 
 import browser from "webextension-polyfill";

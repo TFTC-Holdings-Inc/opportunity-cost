@@ -7,12 +7,12 @@ export default defineConfig(({ mode }) => {
 
   return {
     build: {
-      outDir: path.resolve(__dirname, `dist/${browser}`),
+      outDir: path.resolve(import.meta.dirname, `dist/${browser}`),
       // To prevent Vite from clearing the outDir from the main build
       emptyOutDir: false,
       rollupOptions: {
         input: {
-          background: path.resolve(__dirname, "src/lib/background.ts"),
+          background: path.resolve(import.meta.dirname, "src/lib/background.ts"),
         },
         output: {
           format: "iife",

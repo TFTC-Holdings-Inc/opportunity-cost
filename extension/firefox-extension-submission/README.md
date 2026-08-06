@@ -6,8 +6,8 @@ Complete source code for the Opportunity Cost Firefox extension. Shows Bitcoin e
 
 ### Required Software
 
-- **Node.js**: Version 18.0.0 or higher (tested with v23.11.0)
-- **npm**: Version 8.0.0 or higher (tested with v11.3.0)
+- **Node.js**: Version 22.12.0 or higher
+- **npm**: Version 11.8.0
 - **Operating System**: Windows 10+, macOS 10.15+, or Linux (Ubuntu 18.04+)
 
 ### Supported Browsers for Testing
@@ -19,8 +19,8 @@ Complete source code for the Opportunity Cost Firefox extension. Shows Bitcoin e
 ### 1. Verify Node.js Installation
 
 ```bash
-node --version  # Should be 18.0.0 or higher
-npm --version   # Should be 8.0.0 or higher
+node --version  # Should be 22.12.0 or higher
+npm --version   # Should be 11.8.0
 ```
 
 If Node.js is not installed, download it from [nodejs.org](https://nodejs.org/).
@@ -34,7 +34,7 @@ cd firefox-extension-submission
 ### 3. Install Dependencies
 
 ```bash
-npm install
+npm ci
 ```
 
 This installs all dependencies as specified in `package.json`.
@@ -150,15 +150,15 @@ firefox-extension-submission/
 
 ### Runtime Dependencies
 
-- **React 19.1.0**: UI framework
-- **TypeScript 5.8.3**: Type safety
-- **Tailwind CSS 4.1.6**: Styling framework
+- **React 19.2.8**: UI framework
+- **TypeScript 5.9.3**: Type safety
+- **Tailwind CSS 4.3.3**: Styling framework
 - **webextension-polyfill 0.12.0**: Cross-browser API compatibility
 - **Various UI libraries**: Radix UI components for accessible interface
 
 ### Build Dependencies
 
-- **Vite 6.3.5**: Build tool and development server
+- **Vite 8.2.1**: Build tool and development server
 - **ESLint**: Code quality and consistency
 - **Prettier**: Code formatting
 
@@ -174,7 +174,7 @@ All dependencies are locked to specific versions in `package-lock.json` to ensur
    Error: Unsupported engine
    ```
 
-   **Solution**: Upgrade to Node.js 18.0.0 or higher
+   **Solution**: Upgrade to Node.js 22.12.0 or higher
 
 2. **Missing Dependencies**
 
@@ -182,7 +182,7 @@ All dependencies are locked to specific versions in `package-lock.json` to ensur
    Error: Cannot resolve module
    ```
 
-   **Solution**: Run `npm install` to install all dependencies
+   **Solution**: Run `npm ci` to install all dependencies
 
 3. **TypeScript Compilation Errors**
 
@@ -197,8 +197,8 @@ All dependencies are locked to specific versions in `package-lock.json` to ensur
 If experiencing build issues, try a clean build:
 
 ```bash
-rm -rf node_modules dist
-npm install
+trash node_modules dist
+npm ci
 npm run build:firefox
 ```
 

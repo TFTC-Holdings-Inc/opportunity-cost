@@ -4,115 +4,118 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Privacy Policy for Opportunity Cost Browser Extension",
+  description:
+    "Privacy Policy for the Opportunity Cost website and browser extension",
 };
 
 export default function PrivacyPolicyPage() {
   return (
     <>
       <Header />
-      <main className="max-w-2xl mt-20 mx-auto px-4 py-16 text-gray-900 bg-white">
-        <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-        <p className="text-sm text-gray-500 mb-6">Last Updated: May 21, 2025</p>
+      <main className="mx-auto mt-20 max-w-2xl bg-white px-4 py-16 text-gray-900">
+        <h1 className="mb-2 text-3xl font-bold">Privacy Policy</h1>
+        <p className="mb-6 text-sm text-gray-500">
+          Last Updated: August 6, 2026
+        </p>
+
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Our Privacy Commitment</h2>
+          <h2 className="mb-2 text-xl font-semibold">Our Privacy Commitment</h2>
           <p>
-            Opportunity Cost respects your privacy. Our browser extension
-            operates entirely on your device and does not collect, transmit, or
-            store any of your personal information or browsing history on our
-            servers. This Privacy Policy explains how your data is handled when
-            using our Extension.
+            Opportunity Cost does not collect page contents, browsing history,
+            converted prices, account credentials, or personal information
+            through the browser extension. Price conversion happens on your
+            device. This policy also explains the limited network and website
+            analytics data that service providers process.
           </p>
         </section>
+
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">
-            What Stays On Your Device
+          <h2 className="mb-2 text-xl font-semibold">
+            Data Stored On Your Device
           </h2>
-          <h3 className="font-semibold mt-4 mb-1">
-            Local Settings & Preferences
-          </h3>
-          <ul className="list-disc ml-6 mb-2">
-            <li>Currency preferences and display settings</li>
-            <li>Theme settings (light, dark, or system)</li>
-            <li>Bitcoin denomination preference (sats or BTC)</li>
-            <li>User interface customizations</li>
-          </ul>
-          <h3 className="font-semibold mt-4 mb-1">Optional Local Statistics</h3>
-          <ul className="list-disc ml-6 mb-2">
-            <li>
-              Domain names of sites where conversions occurred (if enabled)
-            </li>
-            <li>Count of price conversions (no price data is stored)</li>
-            <li>Bitcoin price historical data (for your reference only)</li>
-          </ul>
-          <p className="mt-2 text-sm italic">
-            All this information is stored exclusively on your device using
-            browser storage mechanisms and is never transmitted to our servers.
-          </p>
-        </section>
-        <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">
-            How The Extension Works
-          </h2>
-          <ul className="list-disc ml-6 mb-2">
-            <li>
-              <span className="font-semibold">Bitcoin Price Data:</span> The
-              extension fetches current Bitcoin prices from our API. No personal
-              data is sent during these requests.
-            </li>
-            <li>
-              <span className="font-semibold">Page Processing:</span> All
-              webpage scanning for prices happens entirely on your device and no
-              content from websites you visit is ever sent to our servers.
-            </li>
-            <li>
-              <span className="font-semibold">Local Storage:</span> The
-              extension uses your browser&apos;s built-in storage APIs (Chrome
-              Storage API, Firefox Storage API, or IndexedDB) to store settings
-              and optional statistics.
-            </li>
-          </ul>
-        </section>
-        <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">
-            Your Control Over Your Data
-          </h2>
-          <ul className="list-disc ml-6 mb-2">
-            <li>
-              <span className="font-semibold">View Local Data:</span> All stored
-              information is visible in the extension&apos;s Options page
-            </li>
-            <li>
-              <span className="font-semibold">Disable Statistics:</span> You can
-              disable statistics gathering entirely in the extension settings
-            </li>
-            <li>
-              <span className="font-semibold">Clear Data:</span> Use the
-              &quot;Clear All Data&quot; button in the Options page to remove
-              all locally stored information
-            </li>
-            <li>
-              <span className="font-semibold">Uninstall:</span> Removing the
-              extension will permanently delete all local data
-            </li>
-          </ul>
-        </section>
-        <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Changes to This Policy</h2>
           <p>
-            We may update this Privacy Policy occasionally to reflect product
-            improvements or legal requirements. Any changes will be posted on
-            our website and in the extension&apos;s Options page, with an
-            updated &quot;Last Updated&quot; date.
+            The extension stores only the data needed to provide its features:
+          </p>
+          <ul className="mb-2 ml-6 list-disc">
+            <li>
+              Currency, display, denomination, highlight, Saylor Mode, and theme
+              settings
+            </li>
+            <li>Hostnames you choose to add to the disabled-sites list</li>
+            <li>
+              One cached Bitcoin price snapshot and the time it was received
+            </li>
+          </ul>
+          <p>
+            The cached snapshot replaces the previous snapshot. The extension
+            does not keep price history, conversion counts, visited-page URLs,
+            or page text.
           </p>
         </section>
+
         <section className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">Contact Us</h2>
+          <h2 className="mb-2 text-xl font-semibold">
+            Extension Network Requests
+          </h2>
           <p>
-            If you have questions about our privacy practices or this policy,
-            please contact us:
+            When an extension feature needs a fresh Bitcoin price, it requests
+            data from <code>www.opportunitycost.xyz</code>. Prices are cached
+            locally for five minutes, and the extension does not poll on a fixed
+            schedule. The request has no page URL, converted price, user
+            identifier, or request body.
           </p>
-          <ul className="list-disc ml-6 mt-2 mb-2">
+          <p className="mt-2">
+            Like any HTTPS request, it makes standard connection data such as an
+            IP address, user agent, request time, and requested API path
+            available to our hosting provider. That data may reveal that the
+            extension is in use. Hosting logs are governed by our service
+            provider&apos;s retention and security practices.
+          </p>
+        </section>
+
+        <section className="mb-6">
+          <h2 className="mb-2 text-xl font-semibold">Website Analytics</h2>
+          <p>
+            The Opportunity Cost website uses Vercel Web Analytics to understand
+            aggregate website traffic and performance. Website analytics are
+            separate from the extension. The extension does not include an
+            analytics SDK and does not send conversion activity to Vercel
+            Analytics.
+          </p>
+        </section>
+
+        <section className="mb-6">
+          <h2 className="mb-2 text-xl font-semibold">
+            Your Local Data Controls
+          </h2>
+          <ul className="mb-2 ml-6 list-disc">
+            <li>
+              Review and edit settings and disabled-site hostnames on the
+              extension Options page.
+            </li>
+            <li>
+              Select <span className="font-semibold">Clear All Data</span> on
+              the Options page to remove the cached price and reset local
+              settings to their defaults.
+            </li>
+            <li>
+              Uninstall the extension to remove its browser-managed local data.
+            </li>
+          </ul>
+        </section>
+
+        <section className="mb-6">
+          <h2 className="mb-2 text-xl font-semibold">Changes to This Policy</h2>
+          <p>
+            We may update this Privacy Policy to reflect product or legal
+            changes. Updates will be published here with a revised date.
+          </p>
+        </section>
+
+        <section className="mb-6">
+          <h2 className="mb-2 text-xl font-semibold">Contact Us</h2>
+          <p>Questions about this policy can be sent to:</p>
+          <ul className="mb-2 ml-6 mt-2 list-disc">
             <li>Email: contact@opportunitycost.xyz</li>
             <li>Website: https://opportunitycost.xyz</li>
           </ul>

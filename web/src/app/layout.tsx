@@ -19,6 +19,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.opportunitycost.xyz"),
   title: {
     default: "Opportunity Cost – See Prices in Bitcoin Instantly",
     template: "%s | Opportunity Cost",
