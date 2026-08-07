@@ -217,6 +217,9 @@ async function main() {
           maximumFractionDigits: 8,
         })} BTC`;
       }
+      if (userPreferences.denomination === "₿") {
+        return `₿${fmt(satoshis, 0)}`;
+      }
       return `${fmt(satoshis, 0)} sats`;
     };
 
@@ -408,6 +411,15 @@ async function main() {
         label.style.backgroundColor = "rgba(240, 138, 93, 0.2)";
         label.style.padding = "0 4px";
         label.style.borderRadius = "4px";
+      }
+      
+      // Apply bitcoin-symbol class for sans-serif rendering if element contains ₿
+      if (label.textContent && label.textContent.includes("₿")) {
+        label.classList.add("bitcoin-symbol");
+        // Force inline style for maximum override power
+        label.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+        label.style.fontStyle = "normal";
+        label.style.fontVariant = "normal";
       }
     }
 

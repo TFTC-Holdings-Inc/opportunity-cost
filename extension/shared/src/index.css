@@ -148,3 +148,32 @@ select {
     @apply bg-background text-foreground;
   }
 }
+
+/* Force sans-serif font for Bitcoin symbol to avoid serif rendering */
+.bitcoin-symbol,
+.bitcoin-symbol * {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Liberation Sans", "Noto Sans", sans-serif !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+}
+
+/* More aggressive targeting for content script injected elements */
+span.oc-btc-price.bitcoin-symbol,
+.oc-btc-price.bitcoin-symbol {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Liberation Sans", "Noto Sans", sans-serif !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+}
+
+/* Ultra-specific targeting to override any website fonts */
+*[class*="bitcoin-symbol"] {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* High specificity override for any Bitcoin symbol elements */
+.bitcoin-symbol[class],
+span.bitcoin-symbol[class],
+div.bitcoin-symbol[class] {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}

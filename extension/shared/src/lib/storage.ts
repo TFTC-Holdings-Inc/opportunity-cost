@@ -10,7 +10,7 @@ export interface UserPreferences {
   id: string;
   defaultCurrency?: string;
   displayMode?: "bitcoin-only" | "dual-display";
-  denomination?: "btc" | "sats" | "dynamic";
+  denomination?: "btc" | "sats" | "₿" | "dynamic";
   highlightBitcoinValue?: boolean;
   disabledSites?: string[];
   darkMode?: boolean;
