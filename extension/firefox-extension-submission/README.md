@@ -158,7 +158,7 @@ firefox-extension-submission/
 
 ### Build Dependencies
 
-- **Vite 8.2.1**: Build tool and development server
+- **Vite 8.2.4**: Build tool and development server
 - **ESLint**: Code quality and consistency
 - **Prettier**: Code formatting
 
@@ -223,6 +223,6 @@ All original source files included:
 ## Extension Details
 
 - **Name**: Opportunity Cost
-- **Version**: 0.0.3
+- **Version**: 0.0.10
 - **Manifest**: V2 (Firefox compatible)
 - **License**: MIT

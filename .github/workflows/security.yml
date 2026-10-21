@@ -34,7 +34,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22.20.0
+          node-version: 22.x
+          check-latest: true
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
@@ -58,7 +59,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22.20.0
+          node-version: 22.x
+          check-latest: true
           cache: npm
           cache-dependency-path: extension/shared/package-lock.json
       - run: npm ci
@@ -81,7 +83,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22.20.0
+          node-version: 22.x
+          check-latest: true
           cache: npm
           cache-dependency-path: extension/firefox-extension-submission/package-lock.json
       - run: npm ci
