@@ -1,8 +1,8 @@
 {
   "name": "opportunity-cost",
-  "version": "0.0.9",
-  "sourceCommit": "5051c3e48974c132c053c54bfcc0ef95685ef8f1",
+  "version": "0.0.10",
+  "sourceCommit": "b0a8c794075ea17f512f02da55ea2c52481bb84d",
   "browser": "chrome",
   "manifestVersion": 3,
-  "sha256": "92daa5f10584880ec115a1d9346d0524975a0f55371cdd28f12e74adb91f7868"
+  "sha256": "3ef42dfcaeafc40d23d5b04dffaecc66cc822cccb8668d9bba9d9e9a76d5b494"
 }
